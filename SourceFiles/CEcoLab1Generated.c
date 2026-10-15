@@ -1,0 +1,212 @@
+﻿/*
+ * Кодировка: UTF-8 with signature (Codepage 65001).
+ * Назначение: исходный файл компонента лабораторной работы №1, задание 44.
+ * Описание: ACOM/Eco-компонент полиномиальной аппроксимации.
+ * Автор: Анвари Д.А., 24ТИДИ.
+ */
+
+#include "polyfit_core.h"
+#define MAX_ORDER 17u
+#define EPSILON 1.0e-15L
+#define MATRIX_ELEMENTS (MAX_ORDER * (MAX_ORDER + 1u))
+#define WORK_ELEMENTS (MATRIX_ELEMENTS + 3u * (MAX_ORDER + 1u))
+typedef long double (*ReadValue)(void*, uint32_t, uint32_t);
+
+/* Return an absolute value without a dependency on math.h. */
+static long double magnitude(long double x) { return x < 0 ? -x : x; }
+
+/* Compute a square root with Newton iterations without math.h. */
+static long double root_value(long double x) {
+    long double estimate;
+    long double next;
+    uint32_t i;
+    if (x == 0) return 0;
+    estimate = x > 1 ? x : 1;
+    for (i = 0; i < 256u; ++i) {
+        next = (estimate + x / estimate) / 2;
+        if (next == estimate) break;
+        estimate = next;
+    }
+    return estimate;
+}
+
+/* Solve one fit in O(n * d^2 + d^3) time and O(d^2) allocator memory. */
+static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
+    void* context, uint32_t count, uint32_t degree, long double* out,
+    uint32_t method) {
+    long double* block;
+    long double (*a)[MAX_ORDER + 1u];
+    long double* row;
+    long double* result;
+    long double* converted;
+    long double scale;
+    long double center;
+    long double sum;
+    long double a_scale;
+    long double b_shift;
+    long double xv, yv, z, m, av, bv, c, s, h, old, t, f, v;
+    uint32_t n, i, j, k, p, order, bytes;
+    int16_t status;
+    if (memory == 0 || read == 0 || context == 0 || out == 0)
+        return ERR_ECO_POINTER;
+    if (degree >= MAX_ORDER || count < degree + 1u || count > ECO_POLYFIT_MAX_COUNT || method > 1u)
+        return ERR__POLYFIT_ARGUMENT;
+    /* Check before conversion to the uint32_t allocator API. */
+    if (sizeof(long double) > 0xFFFFFFFFu / WORK_ELEMENTS)
+        return ERR_ECO_OUTOFMEMORY;
+    bytes = (uint32_t)(sizeof(long double) * WORK_ELEMENTS);
+    block = (long double*)memory->pVTbl->Alloc(memory, bytes);
+    if (block == 0) return ERR_ECO_OUTOFMEMORY;
+    memory->pVTbl->Fill(memory, block, 0, bytes);
+    a = (long double (*)[MAX_ORDER + 1u])block;
+    row = block + MATRIX_ELEMENTS;
+    result = row + MAX_ORDER + 1u;
+    converted = result + MAX_ORDER + 1u;
+    order = degree + 1u;
+    scale = 0;
+    sum = 0;
+    status = ERR_ECO_SUCCESS;
+    for (n = 0; n < count; ++n) {
+        xv = read(context, n, 0); yv = read(context, n, 1);
+        if (xv - xv != 0 || yv - yv != 0) {
+            status = ERR__POLYFIT_NONFINITE; goto cleanup;
+        }
+        sum += xv;
+    }
+    center = sum / (long double)count;
+    if (center - center != 0) {
+        status = ERR__POLYFIT_NONFINITE; goto cleanup;
+    }
+    for (n = 0; n < count; ++n) {
+        xv = read(context, n, 0) - center;
+        m = magnitude(xv);
+        if (m > scale) scale = m;
+    }
+    if (scale == 0) scale = 1;
+    a_scale = 1 / scale;
+    b_shift = -center * a_scale;
+    for (n = 0; n < count; ++n) {
+        z = read(context, n, 0) * a_scale + b_shift;
+        row[order] = read(context, n, 1);
+        row[degree] = 1;
+        for (i = degree; i > 0; --i) row[i - 1u] = row[i] * z;
+        if (method == 0u) {
+            for (i = 0; i < order; ++i)
+                for (j = 0; j <= order; ++j) a[i][j] += row[i] * row[j];
+        }
+        else {
+            for (i = 0; i < order; ++i) {
+                av = a[i][i]; bv = row[i];
+                m = magnitude(av) > magnitude(bv) ? magnitude(av) : magnitude(bv);
+                if (m == 0) continue;
+                h = m * root_value((av / m) * (av / m) + (bv / m) * (bv / m));
+                c = av / h; s = bv / h;
+                for (j = i; j <= order; ++j) {
+                    old = a[i][j];
+                    a[i][j] = c * old + s * row[j];
+                    row[j] = -s * old + c * row[j];
+                }
+            }
+        }
+    }
+    if (method == 0u) {
+        for (i = 0; i < order; ++i) {
+            p = i;
+            for (j = i + 1u; j < order; ++j)
+                if (magnitude(a[j][i]) > magnitude(a[p][i])) p = j;
+            if (p != i) {
+                for (k = i; k <= order; ++k) {
+                    t = a[i][k]; a[i][k] = a[p][k]; a[p][k] = t;
+                }
+            }
+            if (magnitude(a[i][i]) < EPSILON) {
+                status = ERR__POLYFIT_SINGULAR; goto cleanup;
+            }
+            for (j = i + 1u; j < order; ++j) {
+                f = a[j][i] / a[i][i];
+                for (k = i; k <= order; ++k) a[j][k] -= f * a[i][k];
+            }
+        }
+    }
+    for (i = order; i > 0u; ) {
+        --i;
+        v = a[i][order];
+        if (magnitude(a[i][i]) < EPSILON) {
+            status = ERR__POLYFIT_SINGULAR; goto cleanup;
+        }
+        for (j = i + 1u; j < order; ++j) v -= a[i][j] * result[j];
+        result[i] = v / a[i][i];
+    }
+    /* Compose p((x-center)/scale) in the original x basis. */
+    /* Rebuild with a small fixed temporary using Horner composition. */
+    for (i = 0; i < order; ++i) converted[i] = 0;
+    for (i = 0; i < order; ++i) {
+        uint32_t old_degree;
+        uint32_t j;
+        old_degree = i;
+        if (i != 0u) {
+            for (j = old_degree; j > 0u; --j)
+                converted[j] = converted[j - 1u] * b_shift + converted[j] * a_scale;
+            converted[0] = converted[0] * a_scale;
+        }
+        converted[old_degree] += result[i];
+    }
+    for (i = 0; i < order; ++i) {
+        if (converted[i] - converted[i] != 0) {
+            status = ERR__POLYFIT_NONFINITE; goto cleanup;
+        }
+    }
+    memory->pVTbl->Copy(memory, out, converted, (uint32_t)(sizeof(long double) * order));
+cleanup:
+    memory->pVTbl->Free(memory, block);
+    return status;
+}
+
+/* Generate a typed view over x/y input arrays. */
+#define PAIR(T,N) \
+    typedef struct N { const T* x; const T* y; } N; \
+    static long double N##_read(void* context, uint32_t i, uint32_t column) { \
+        N* pair = (N*)context; \
+        return column == 0u ? (long double)pair->x[i] : (long double)pair->y[i]; \
+    }
+PAIR(double, DoublePair)
+PAIR(float, FloatPair)
+PAIR(long double, LongDoublePair)
+PAIR(int, IntPair)
+PAIR(long, LongPair)
+
+/* Generate one typed entry point; conversion is arithmetic and the final
+ * same-type transfer uses IEcoMemoryAllocator1::Copy. */
+#define API(S,T,O,N,LIMIT) \
+int16_t S##_00000045(/* in */ IEcoMemoryAllocator1* memory, \
+    /* in */ const T* x, /* in */ const T* y, /* in */ uint32_t count, \
+    /* in */ uint32_t degree, /* out */ O* out, /* in */ uint32_t method) { \
+    N pair; long double* result; O* converted; \
+    uint32_t i, bytes; int16_t status; \
+    if (memory == 0 || out == 0) return ERR_ECO_POINTER; \
+    if (degree >= MAX_ORDER) return ERR__POLYFIT_ARGUMENT; \
+    if (sizeof(O) > 0xFFFFFFFFu / (degree + 1u)) return ERR_ECO_OUTOFMEMORY; \
+    bytes = (uint32_t)(sizeof(O) * (degree + 1u)); \
+    memory->pVTbl->Fill(memory, out, 0, bytes); \
+    if (x == 0 || y == 0) return ERR_ECO_POINTER; \
+    if (sizeof(long double) > 0xFFFFFFFFu / (2u * MAX_ORDER)) return ERR_ECO_OUTOFMEMORY; \
+    result = (long double*)memory->pVTbl->Alloc(memory, (uint32_t)(sizeof(long double) * 2u * MAX_ORDER)); \
+    if (result == 0) return ERR_ECO_OUTOFMEMORY; \
+    converted = (O*)(result + MAX_ORDER); pair.x = x; pair.y = y; \
+    status = solve(memory, N##_read, &pair, count, degree, result, method); \
+    if (status == ERR_ECO_SUCCESS) { \
+        for (i = 0; i <= degree; ++i) { \
+            if ((LIMIT) > 0 && magnitude(result[i]) > (LIMIT)) { status = ERR__POLYFIT_NONFINITE; break; } \
+            converted[i] = (O)result[i]; \
+            if (converted[i] - converted[i] != 0) { status = ERR__POLYFIT_NONFINITE; break; } \
+        } \
+        if (status == ERR_ECO_SUCCESS) memory->pVTbl->Copy(memory, out, converted, bytes); \
+    } \
+    memory->pVTbl->Free(memory, result); \
+    return status; \
+}
+API(polyfit_solve, double, double, DoublePair, 1.7976931348623157e308L)
+API(polyfit_solve_float, float, float, FloatPair, 3.4028234663852886e38L)
+API(polyfit_solve_long_double, long double, long double, LongDoublePair, 0.0L)
+API(polyfit_solve_int, int, double, IntPair, 1.7976931348623157e308L)
+API(polyfit_solve_long, long, long double, LongPair, 0.0L)

@@ -1,0 +1,8 @@
+mkdir -p BuildFiles/Host
+clang -std=c89 -Wall -Wextra -fno-stack-protector -DECO_APPLE -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c -o BuildFiles/Host/EcoLab1GeneratedUnitTest
+./BuildFiles/Host/EcoLab1GeneratedUnitTest
+COMPONENT degree=2 coefficients=[2.0000000000000004, 0, 2.9999999999999996]
+COMPONENT degree=3 coefficients=[1.0000000000000016, -2.0000000000000027, 0.49999999999999317, 3.000000000000004]
+COMPONENT degree=2 coefficients=[2.0000000000000004, 8.7672765662343564e-17, 3.0000000000000004]
+COMPONENT degree=3 coefficients=[1.0000000000000004, -2.0000000000000009, 0.49999999999999961, 3.0000000000000009]
+Проверок: 72, ошибок: 0

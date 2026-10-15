@@ -1,0 +1,17 @@
+.DS_Store
+*.o
+BuildFiles/**/ModuleCache.noindex/**
+BuildFiles/**/Index.noindex/**
+BuildFiles/**/CompilationCache.noindex/**
+BuildFiles/**/Logs/**
+BuildFiles/**/SDKStatCaches.noindex/**
+BuildFiles/**/*.pcm
+BuildFiles/**/*.dSYM/**
+DependenciesFiles/**/BuildFiles/**
+Report_EcoLab1_Task44.docx
+
+# Xcode generated products, caches and per-user settings
+AssemblyFiles/**/build/**
+AssemblyFiles/**/xcuserdata/**
+*.xcuserstate
+BuildFiles/**

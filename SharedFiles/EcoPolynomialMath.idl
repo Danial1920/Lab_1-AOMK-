@@ -1,0 +1,77 @@
+﻿/*
+ * <character encoding>
+ *   Cyrillic (UTF-8 with signature) - Codepage 65001
+ * </character encoding>
+ *
+ * <summary>
+ *   EcoPolynomialMath IDL contract
+ * </summary>
+ *
+ * <description>
+ *   Контракт задания 44: полиномиальная аппроксимация методом наименьших квадратов.
+ *   Интерфейс IEcoPolynomialMath предоставляет перегрузки polyfit для пяти типов,
+ *   простые операции, FitVector и создание объекта IEcoPolynomial.
+ * </description>
+ *
+ * <author>
+ *   Анвари Д.А., 24ТИДИ
+ * </author>
+ */
+
+import "IEcoBase1.idl";
+
+typedef [public] struct EcoVectorView {
+    [size_is(length)] const double_t* data;
+    uint32_t length;
+} EcoVectorView;
+
+interface IEcoPolynomial;
+
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000044),
+    pointer_default(unique)
+]
+interface IEcoPolynomialMath : IEcoUnknown {
+    int16_t polyfit([in, size_is(count)] const double_t* x,
+                    [in, size_is(count)] const double_t* y,
+                    [in] uint32_t count, [in] uint32_t degree,
+                    [out, size_is(degree + 1)] double_t* coefficients);
+    int16_t polyfitf([in, size_is(count)] const float_t* x,
+                     [in, size_is(count)] const float_t* y,
+                     [in] uint32_t count, [in] uint32_t degree,
+                     [out, size_is(degree + 1)] float_t* coefficients);
+    int16_t polyfitl([in, size_is(count)] const ldouble_t* x,
+                     [in, size_is(count)] const ldouble_t* y,
+                     [in] uint32_t count, [in] uint32_t degree,
+                     [out, size_is(degree + 1)] ldouble_t* coefficients);
+    int16_t polyfiti([in, size_is(count)] const int* x,
+                     [in, size_is(count)] const int* y,
+                     [in] uint32_t count, [in] uint32_t degree,
+                     [out, size_is(degree + 1)] double_t* coefficients);
+    int16_t polyfit_long([in, size_is(count)] const long* x,
+                         [in, size_is(count)] const long* y,
+                         [in] uint32_t count, [in] uint32_t degree,
+                         [out, size_is(degree + 1)] ldouble_t* coefficients);
+    int16_t Add([in] double_t x, [in] double_t y, [out] double_t* value);
+    int16_t Subtract([in] double_t x, [in] double_t y, [out] double_t* value);
+    int16_t FitVector([in] const EcoVectorView* x,
+                      [in] const EcoVectorView* y, [in] uint32_t degree,
+                      [out, size_is(degree + 1)] double_t* coefficients);
+    int16_t new_Polynomial([in, size_is(count)] const double_t* x,
+                           [in, size_is(count)] const double_t* y,
+                           [in] uint32_t count, [in] uint32_t degree,
+                           [out] IEcoPolynomial** polynomial);
+};
+
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000047),
+    pointer_default(unique)
+]
+interface IEcoPolynomial : IEcoUnknown {
+    int16_t get_Degree([out] uint32_t* degree);
+    int16_t get_Coefficients([in] uint32_t capacity,
+                             [out, size_is(capacity)] double_t* coefficients);
+    int16_t Evaluate([in] double_t x, [out] double_t* value);
+};

@@ -1,0 +1,117 @@
+/*
+ * <summary>
+ *   Stateless Service-Oriented Eco IDL Specification for Simplex V1
+ * </summary>
+ * <description>
+ *   This file defines the interface contract for a stateless domain service 
+ *   that manipulates intrusive memory cells (ECO_SIMPLEX_V1_T) directly 
+ *   via raw hardware memory pointers.
+ * </description>
+ */
+
+#include "IEcoBase1.idl"
+
+    /* ========================================================================== */
+    /*               CORE ABI STRUCTURE DEFINITIONS & DESCRIPTORS                 */
+    /* ========================================================================== */
+
+/* Monolithic Intrusive Memory Cell (Graph/Topology Atom) */
+typedef [public] struct ECO_SIMPLEX_V1_T {
+    /* Block 1: Management & Execution Metadata (8 Bytes fixed) */
+    uint32_t ref_count;     /* Atomic reference counter for node lifecycle tracking */
+    uint16_t node_flags;    /* Binary status masks (e.g., SIMPLE_HDR, LINE, TREE) */
+    uint8_t  struct_type;   /* Active logical abstraction container ID (e.g., MAP_T) */
+    uint8_t  layout_align;  /* Memory pool/Arena physical byte alignment exponent */
+
+    /* Block 2: Topological Connection Matrix (16 Bytes on x86 / 32 Bytes on x64) */
+    voidptr_t ports[4];    /* Array of direct hardware RAM pointers to adjacent atoms */
+
+    /* Block 3: Cache-aligned Payload Block (Strictly 16 Bytes) */
+    ECO_VARIANT_V1_T variant; /* Uniform cross-platform unified variant record */
+} ECO_SIMPLEX_V1_T;
+
+/* Interface Pointer Type Descriptor alias */
+typedef ECO_SIMPLEX_V1_T* ECO_SIMPLEX_V1_PTR_t;
+
+/* Lightweight Runtime Context Cursor for Sequenced or Non-recursive Wave Walks */
+typedef [public] struct ECO_SIMPLEX_ITERATOR_V1_T {
+    uint64_t container_head; /* Physical address of the guard Sentinel Node (Loop barrier) */
+    uint64_t current_node;   /* Current active cursor tracking target variant address */
+    uint16_t container_type; /* Engine collection marker governing traversal step rules */
+    uint16_t state_flags;    /* Local inner state bitmasks for navigational tracking */
+    uint64_t traverse_stack; /* Handle to non-recursive dynamic graph traversal context */
+} ECO_SIMPLEX_ITERATOR_V1_T;
+
+/* Core positional strategies for Simplex iterator initialization */
+typedef [public] enum ECO_SIMPLEX_ITER_POSITION {
+    ECO_SIMPLEX_ITER_BEGIN  = 0,   /* Direct cursor to the first valid data node */
+    ECO_SIMPLEX_ITER_END    = 1,   /* Position cursor past the tail (System NULL) */
+    ECO_SIMPLEX_ITER_CUSTOM = 2    /* Force cursor to a specific custom node pointer */
+} ECO_SIMPLEX_ITER_POSITION;
+
+
+    /* ========================================================================== */
+    /*               CORE TOPOLOGY INTERFACE CONTRACT                             */
+    /* ========================================================================== */
+
+[
+    object,
+    uuid(00000000-0000-0000-0000-0001FDFEFF),
+    pointer_default(unique),
+    helpstring("IEcoSimplex1: Low-level Atom Factory and Port Commutator Interface")
+]
+interface IEcoSimplex1 : IEcoUnknown
+{
+    /* --- Group 1: Memory Pool Allocation & Arena Lifecycle Management --- */ 
+    [helpstring("Allocates a clean, fixed-geometry memory cell from the monolithic Arena pool")]
+    int16_t AllocNode(
+        [in] uint8_t structType, 
+        [out, retval] ECO_SIMPLEX_V1_T** ppNode
+    );
+
+    [helpstring("Decrements ref_count and cascades the atom back to the Arena free block list")]
+    int16_t FreeNode(
+        [in] ECO_SIMPLEX_V1_T* pNode
+    );
+
+    /* --- Group 2: Low-Level Intrusive Topology Commutation --- */
+    [helpstring("Establishes a direct hardware link between two nodes via chosen slot index (0-3)")]
+    int16_t ConnectNodes(
+        [in] ECO_SIMPLEX_V1_T* pSourceNode, 
+        [in] uint32_t portIndex, 
+        [in] ECO_SIMPLEX_V1_T* pTargetNode
+    );
+
+    [helpstring("Severs an active connection at the given slot index, reverting address to NULL")]
+    int16_t DisconnectPort(
+        [in] ECO_SIMPLEX_V1_T* pNode, 
+        [in] uint32_t portIndex,
+        [out, retval] ECO_SIMPLEX_V1_T** ppOutNode
+    );
+
+    [helpstring("Atomically swaps link addresses in two slots of a node to execute tree rotations")]
+    int16_t SwapPorts(
+        [in] ECO_SIMPLEX_V1_T* pNode, 
+        [in] uint32_t portIndexA, 
+        [in] uint32_t portIndexB
+    );
+
+    /* --- Group 3: Navigational Iterators & Enumeration Controls --- */
+    [helpstring("Initializes a new runtime cursor bound to the target container Sentinel node")]
+    int16_t CreateIterator(
+        [in] ECO_SIMPLEX_V1_T* pContainerSentinel, 
+        [in] uint32_t initPosition, 
+        [out] ECO_SIMPLEX_ITERATOR_V1_T* pIterator
+    );
+
+    [helpstring("Increments the tracking cursor position following inner collection rules")]
+    int16_t IteratorNext(
+        [in, out] ECO_SIMPLEX_ITERATOR_V1_T* pIterator
+    );
+
+    [helpstring("Verifies if the traversal cursor has reached the terminal Sentinel boundary")]
+    bool_t IteratorHasNext(
+        [in] ECO_SIMPLEX_ITERATOR_V1_T* pIterator
+    );
+};
+

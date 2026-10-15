@@ -1,0 +1,5 @@
+degree=2 max_abs_error=4.4408920985006262e-16
+degree=3 max_abs_error=6.8278716014447127e-15
+degree=2 max_abs_error=4.4408920985006262e-16
+degree=3 max_abs_error=8.8817841970012523e-16
+component_vs_scipy max_abs_error=6.8278716014447127e-15

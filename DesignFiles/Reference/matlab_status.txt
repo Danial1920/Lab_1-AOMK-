@@ -1,0 +1,4 @@
+MATLAB R2026b was available at /Applications/MATLAB_R2026b.app.
+The reference script completed with exit code 0.
+The captured output is DesignFiles/Reference/matlab_output.txt.
+The component comparison is DesignFiles/Reference/compare_matlab.py.
