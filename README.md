@@ -16,8 +16,11 @@
 ## Проверка
 
 ```sh
+cd "/Users/danial2006/Documents/ChatGPT/Лабораторная работа №1"
+
 make test
 make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test
+make check
 ```
 
 `make test` собирает Host UnitTest в C89 и выполняет 72 проверки с выводом `Проверок: N, ошибок: K`. `eco-test` собирает консольный Eco-клиент, получает обе реализации через шину, выполняет 76 проверок и возвращает ненулевой код при любой ошибке.
@@ -30,7 +33,91 @@ make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test
 
 Для Xcode откройте оба проекта из `AssemblyFiles/Mac/Xcode_v123/`, задайте `ECO_FRAMEWORK` на распакованный `Eco.Framework_20260918.zip`, соберите компонент в схемах `Static` и `Dynamic` для `Debug` и `Release`, а UnitTest — в `Static/Debug` и `Static/Release`. Команды приведены в `XCODE_SETUP.md`. После динамической сборки запустите `DesignFiles/Report/check_dynamic_deps.sh`.
 
-Для macOS arm64 отдельные Dynamic-артефакты двух реализаций создаются скриптом `DesignFiles/Report/build_dynamic_runtime_macos.sh`. Обычный файл экспортирует фабрику `CID_EcoPolynomialMath`, QR-файл собирается с `POLYFIT_QR_ONLY` и экспортирует фабрику `CID_EcoPolynomialMathQR`. Перед запуском динамического Eco-клиента оба файла нужно разместить в каталоге runtime, который использует `ECO_FRAMEWORK_RT`.
+## Полная сборка через терминал
+
+Сначала укажите путь к распакованному Eco Framework:
+
+```sh
+export ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework"
+cd "/Users/danial2006/Documents/ChatGPT/Лабораторная работа №1"
+```
+
+Локальные тесты, строгая C89-компиляция, проверка отсутствия libc и sanitizer:
+
+```sh
+make check
+```
+
+Интеграционный Eco UnitTest через настоящий `IEcoSystem1` и `IEcoInterfaceBus1`:
+
+```sh
+make ECO_FRAMEWORK="$ECO_FRAMEWORK" eco-test
+```
+
+Компонент Static Debug:
+
+```sh
+xcodebuild \
+  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
+  -scheme Static -configuration Debug \
+  -derivedDataPath BuildFiles/XcodeComponentStaticDebug \
+  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Компонент Static Release:
+
+```sh
+xcodebuild \
+  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
+  -scheme Static -configuration Release \
+  -derivedDataPath BuildFiles/XcodeComponentStaticRelease \
+  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Компонент Dynamic Release:
+
+```sh
+xcodebuild \
+  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
+  -scheme Dynamic -configuration Release \
+  -derivedDataPath BuildFiles/XcodeComponentDynamicRelease \
+  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+UnitTest Static Debug:
+
+```sh
+xcodebuild \
+  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
+  -scheme Static -configuration Debug \
+  -derivedDataPath BuildFiles/XcodeUnitDebug \
+  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+UnitTest Static Release:
+
+```sh
+xcodebuild \
+  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
+  -scheme Static -configuration Release \
+  -derivedDataPath BuildFiles/XcodeUnitRelease \
+  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Не запускайте одновременно сборку одного проекта в Xcode и терминале. Если появляется `database is locked`, остановите текущую сборку и удалите только её производный каталог, например `rm -rf BuildFiles/XcodeUnitDebug`, затем повторите команду.
+
+Для macOS arm64 отдельные Dynamic-артефакты двух реализаций создаются скриптом `DesignFiles/Report/build_dynamic_runtime_macos.sh`:
+
+```sh
+ECO_FRAMEWORK="$ECO_FRAMEWORK" DesignFiles/Report/build_dynamic_runtime_macos.sh
+```
+
+Обычный файл экспортирует фабрику `CID_EcoPolynomialMath`, QR-файл собирается с `POLYFIT_QR_ONLY` и экспортирует фабрику `CID_EcoPolynomialMathQR`. Перед запуском динамического Eco-клиента оба файла нужно разместить в каталоге runtime, который использует `ECO_FRAMEWORK_RT`.
 
 ## Структура
 
