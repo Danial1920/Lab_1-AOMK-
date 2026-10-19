@@ -18,7 +18,7 @@
                BlueprintIdentifier = "01C711F427F20D7900AE9906"
                BuildableName = "Static"
                BlueprintName = "Static"
-               ReferencedContainer = "container:EcoLab1GeneratedUnitTest.xcodeproj">
+               ReferencedContainer = "container:EcoLab1UnitTest.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -49,7 +49,7 @@
             BlueprintIdentifier = "01C711F427F20D7900AE9906"
             BuildableName = "Static"
             BlueprintName = "Static"
-            ReferencedContainer = "container:EcoLab1GeneratedUnitTest.xcodeproj">
+            ReferencedContainer = "container:EcoLab1UnitTest.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -66,7 +66,7 @@
             BlueprintIdentifier = "01C711F427F20D7900AE9906"
             BuildableName = "Static"
             BlueprintName = "Static"
-            ReferencedContainer = "container:EcoLab1GeneratedUnitTest.xcodeproj">
+            ReferencedContainer = "container:EcoLab1UnitTest.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

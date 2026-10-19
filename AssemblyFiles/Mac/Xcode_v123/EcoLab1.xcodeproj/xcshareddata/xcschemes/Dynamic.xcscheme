@@ -17,7 +17,7 @@
                BlueprintIdentifier = "01138ACB27F1BDD300734060"
                BuildableName = "4D572607A26A48C1BBC94AB2CB6CFF86.dylib"
                BlueprintName = "Dynamic"
-               ReferencedContainer = "container:EcoLab1Generated.xcodeproj">
+               ReferencedContainer = "container:EcoLab1.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
