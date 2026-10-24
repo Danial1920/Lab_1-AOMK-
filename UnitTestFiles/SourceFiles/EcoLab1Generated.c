@@ -81,11 +81,24 @@ static void check_calculator_components(IEcoInterfaceBus1* bus) {
             }
         }
     }
+    value = 0; y = 0;
+    status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorC, 0,
+        &IID_IEcoCalculatorY, &value);
+    y = (IEcoCalculatorY*)value;
+    check(status == ERR_ECO_SUCCESS && y != 0);
+    if (y != 0) {
+        check(y->pVTbl->Multiplication(y, -2.0, 4.5) == -9.0);
+        y->pVTbl->Release(y);
+    }
+    value = 0;
+    status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorA, 0,
+        &IID_IEcoLab1, &value);
+    check(status != ERR_ECO_SUCCESS && value == 0);
 }
 
 static void check_lab2_graph(IEcoInterfaceBus1* bus) {
     IEcoLab2* lab2; IEcoLab1* lab1; IEcoCalculatorX* x; IEcoCalculatorY* y;
-    IEcoUnknown* outer; IEcoUnknown* inner; int16_t status; double result;
+    IEcoUnknown* outer; IEcoUnknown* inner; int16_t status;
     lab2 = 0; lab1 = 0; x = 0; y = 0; outer = 0; inner = 0;
     status = bus->pVTbl->QueryComponent(bus, &CID_EcoLab2, 0,
         &IID_IEcoLab2, (voidptr_t*)&lab2);
@@ -103,6 +116,9 @@ static void check_lab2_graph(IEcoInterfaceBus1* bus) {
         status = lab1->pVTbl->QueryInterface(lab1, &IID_IEcoCalculatorX, (voidptr_t*)&x);
         check(status == ERR_ECO_SUCCESS && x != 0);
         if (x != 0) { check(x->pVTbl->Subtraction(x, 9.0, 4.0) == 5.0); x->pVTbl->Release(x); }
+        status = lab1->pVTbl->QueryInterface(lab1, &IID_IEcoCalculatorY, (voidptr_t*)&y);
+        check(status == ERR_ECO_SUCCESS && y != 0);
+        if (y != 0) { check(y->pVTbl->Division(y, 9.0, 3.0) == 3.0); y->pVTbl->Release(y); }
         lab1->pVTbl->Release(lab1);
     }
     status = lab2->pVTbl->QueryInterface(lab2, &IID_IEcoUnknown, (voidptr_t*)&outer);
@@ -117,7 +133,6 @@ static void check_lab2_graph(IEcoInterfaceBus1* bus) {
         }
         outer->pVTbl->Release(outer);
     }
-    result = 0.0; (void)result;
     lab2->pVTbl->Release(lab2);
 }
 

@@ -231,8 +231,21 @@ int16_t EcoLab2_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus) {
     status = PolyfitComponent_RegisterOnBus(bus);
     if (status != ERR_ECO_SUCCESS) return status;
     status = CalculatorComponents_RegisterOnBus(bus);
-    if (status != ERR_ECO_SUCCESS) return status;
+    if (status != ERR_ECO_SUCCESS) {
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
+        return status;
+    }
     status = bus->pVTbl->RegisterComponent(bus, &CID_EcoLab2,
         (IEcoUnknownPtr_t)GetEcoLab2Factory());
+    if (status != ERR_ECO_SUCCESS) {
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorE);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorD);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorC);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorB);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorA);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
+        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
+    }
     return status;
 }

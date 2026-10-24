@@ -27,7 +27,7 @@
 ## Реальные проверки
 
 - `make test` — 72 проверки Host UnitTest;
-- `make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test` — 103 проверки Lab1, Lab2 и A–E через Eco Interface Bus;
+- `make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test` — 108 проверок Lab1, Lab2 и A–E через Eco Interface Bus;
 - Xcode Static и Dynamic Debug/Release для компонента, Static Debug/Release для UnitTest;
 - macOS Dynamic runtime собирается двумя артефактами: обычным и QR с отдельной экспортируемой фабрикой;
 - `DesignFiles/Report/check_no_libc.sh` — поиск запрещённых включений/вызовов и `nm -u` для объектных файлов компонента.

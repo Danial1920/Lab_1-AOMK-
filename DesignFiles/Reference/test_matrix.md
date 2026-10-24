@@ -10,7 +10,7 @@
 | QueryInterface | Lab1↔X/Y, Lab2→Lab1/X/Y, неизвестный IID |
 | Aggregation | controlling unknown для B/E/Lab1 |
 | Контроль | AddRef/Release, деление на ноль, ненулевой код ошибки |
-| Eco integration | 103 проверки, 103 успешных |
+| Eco integration | 108 проверок, 108 успешных |
 
 | Группа | Проверки |
 |---|---|

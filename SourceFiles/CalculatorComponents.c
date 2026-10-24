@@ -272,11 +272,20 @@ int16_t CalculatorComponents_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus) {
     status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorA,
         (IEcoUnknownPtr_t)GetCalculatorAFactory()); if (status != ERR_ECO_SUCCESS) return status;
     status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorB,
-        (IEcoUnknownPtr_t)GetCalculatorBFactory()); if (status != ERR_ECO_SUCCESS) return status;
+        (IEcoUnknownPtr_t)GetCalculatorBFactory()); if (status != ERR_ECO_SUCCESS) goto rollback_a;
     status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorC,
-        (IEcoUnknownPtr_t)GetCalculatorCFactory()); if (status != ERR_ECO_SUCCESS) return status;
+        (IEcoUnknownPtr_t)GetCalculatorCFactory()); if (status != ERR_ECO_SUCCESS) goto rollback_b;
     status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorD,
-        (IEcoUnknownPtr_t)GetCalculatorDFactory()); if (status != ERR_ECO_SUCCESS) return status;
-    return bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorE,
+        (IEcoUnknownPtr_t)GetCalculatorDFactory()); if (status != ERR_ECO_SUCCESS) goto rollback_c;
+    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorE,
         (IEcoUnknownPtr_t)GetCalculatorEFactory());
+    if (status == ERR_ECO_SUCCESS) return status;
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorD);
+rollback_c:
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorC);
+rollback_b:
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorB);
+rollback_a:
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorA);
+    return status;
 }
