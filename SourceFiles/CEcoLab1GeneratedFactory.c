@@ -11,6 +11,7 @@
 #include "IEcoCalculatorX.h"
 #include "IEcoCalculatorY.h"
 #include "IEcoLab1.h"
+#include "IdEcoLab2.h"
 #include "polyfit_core.h"
 #include "IEcoInterfaceBus1.h"
 #include "IdEcoMemoryManager1.h"
@@ -590,7 +591,9 @@ IEcoComponentFactory* GetPolynomialQRFactory_00000046(void) {
 #undef GetIEcoComponentFactoryPtr
 #endif
 ECO_EXPORT IEcoComponentFactory* ECOCALLMETHOD GetIEcoComponentFactoryPtr(void) {
-#ifdef POLYFIT_QR_ONLY
+#ifdef ECO_LAB2_ONLY
+    return GetEcoLab2Factory();
+#elif defined(POLYFIT_QR_ONLY)
     return &qr_factory.factory;
 #else
     return &normal_factory.factory;

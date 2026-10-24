@@ -4,7 +4,7 @@
 
 ## Лабораторная работа №2
 
-В ветке `lab2` поверх Lab1 добавлен ACOM-граф калькуляторных компонентов: `IEcoCalculatorX` (сложение и вычитание), `IEcoCalculatorY` (умножение, деление и `TryDivision`), корневые интерфейсы `IEcoLab1` и `IEcoLab2`, отдельные CID A–E, включение A/D, агрегирование B/E и внешнее агрегирование `Eco.Lab1` компонентом `Eco.Lab2`. Поведение polyfit и его UnitTest сохранены.
+В основной ветке `main` поверх Lab1 добавлен ACOM-граф калькуляторных компонентов: `IEcoCalculatorX` (сложение и вычитание), `IEcoCalculatorY` (умножение, деление и `TryDivision`), корневые интерфейсы `IEcoLab1` и `IEcoLab2`, отдельные CID A–E, включение A/D, агрегирование B/E и внешнее агрегирование `Eco.Lab1` компонентом `Eco.Lab2`. Поведение polyfit и его UnitTest сохранены.
 
 ## Реализация
 
@@ -117,13 +117,13 @@ xcodebuild \
 
 Не запускайте одновременно сборку одного проекта в Xcode и терминале. Если появляется `database is locked`, остановите текущую сборку и удалите только её производный каталог, например `rm -rf BuildFiles/XcodeUnitDebug`, затем повторите команду.
 
-Для macOS arm64 отдельные Dynamic-артефакты двух реализаций создаются скриптом `DesignFiles/Report/build_dynamic_runtime_macos.sh`:
+Для macOS arm64 отдельные Dynamic-артефакты двух реализаций polyfit и внешнего Lab2 factory создаются скриптом `DesignFiles/Report/build_dynamic_runtime_macos.sh`:
 
 ```sh
 ECO_FRAMEWORK="$ECO_FRAMEWORK" DesignFiles/Report/build_dynamic_runtime_macos.sh
 ```
 
-Обычный файл экспортирует фабрику `CID_EcoPolynomialMath`, QR-файл собирается с `POLYFIT_QR_ONLY` и экспортирует фабрику `CID_EcoPolynomialMathQR`. Перед запуском динамического Eco-клиента оба файла нужно разместить в каталоге runtime, который использует `ECO_FRAMEWORK_RT`.
+Обычный файл экспортирует фабрику `CID_EcoPolynomialMath`, QR-файл собирается с `POLYFIT_QR_ONLY` и экспортирует фабрику `CID_EcoPolynomialMathQR`, а Lab2-файл собирается с `ECO_LAB2_ONLY` и экспортирует `GetEcoLab2Factory`. Перед запуском динамического Eco-клиента нужный файл нужно разместить в каталоге runtime, который использует `ECO_FRAMEWORK_RT`.
 
 ## Структура
 

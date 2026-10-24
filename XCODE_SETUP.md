@@ -6,7 +6,7 @@
 4. В Xcode Settings → Locations → Custom Paths добавьте `ECO_FRAMEWORK` со значением каталога распакованного Eco Framework.
 5. Для компонента соберите схемы `Static` и `Dynamic` в конфигурациях `Debug` и `Release`. Для UnitTest доступны `Static/Debug` и `Static/Release`.
 
-Для лабораторной работы №2 используйте ветку `lab2`. В ней те же Xcode-проекты собирают дополнительные исходники `CalculatorComponents.c` и `EcoLab2.c`; полный Eco UnitTest регистрирует Lab1, Lab2 и компоненты A–E и выполняет 103 проверки.
+Лабораторная работа №2 находится в той же основной ветке `main`: те же Xcode-проекты собирают дополнительные исходники `CalculatorComponents.c` и `EcoLab2.c`; полный Eco UnitTest регистрирует Lab1, Lab2 и компоненты A–E и выполняет 108 проверок.
 
 Проверка из терминала:
 
@@ -46,5 +46,5 @@ DesignFiles/Report/check_dynamic_deps.sh \
   "BuildFiles/Mac/arm64 x86_64/DynamicRelease/4D572607A26A48C1BBC94AB2CB6CFF86.dylib"
 ```
 
-Для проверки обеих Dynamic CID на macOS используйте `DesignFiles/Report/build_dynamic_runtime_macos.sh`.
-Скрипт создаёт обычный артефакт и отдельный QR-артефакт в каталоге `DynamicReleaseQR`.
+Для проверки обеих Dynamic CID и внешнего Lab2 factory на macOS используйте `DesignFiles/Report/build_dynamic_runtime_macos.sh`.
+Скрипт создаёт обычный артефакт в `DynamicRelease`, QR-артефакт в `DynamicReleaseQR` и Lab2-артефакт в `DynamicReleaseLab2`. Для каждого запуска используется отдельный `-derivedDataPath`, поэтому сценарий не конфликтует с параллельной сборкой Xcode.

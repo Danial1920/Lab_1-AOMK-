@@ -139,7 +139,9 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
     }
     /* Compose p((x-center)/scale) in the original x basis. */
     /* Rebuild with a small fixed temporary using Horner composition. */
-    for (i = 0; i < order; ++i) converted[i] = 0;
+    /* Keep temporary initialization inside the Eco allocator contract. */
+    memory->pVTbl->Fill(memory, converted, 0,
+        (uint32_t)(sizeof(long double) * order));
     for (i = 0; i < order; ++i) {
         uint32_t old_degree;
         uint32_t j;
