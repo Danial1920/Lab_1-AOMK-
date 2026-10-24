@@ -314,10 +314,10 @@ int main(void) {
     allocator_init(&memory);
     normal = 0;
     qr = 0;
-    status = PolyfitComponent_Create_00000045(0, &memory.allocator, 0u, &normal);
+    status = PolyfitComponent_Create_00000045(0, &memory.allocator, 0u, 0, &normal);
     check(status == ERR_ECO_SUCCESS);
     check_component(&memory, normal);
-    status = PolyfitComponent_Create_00000045(0, &memory.allocator, 1u, &qr);
+    status = PolyfitComponent_Create_00000045(0, &memory.allocator, 1u, 0, &qr);
     check(status == ERR_ECO_SUCCESS);
     check_component(&memory, qr);
     if (normal != 0) normal->pVTbl->Release(normal);

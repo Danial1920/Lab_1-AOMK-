@@ -9,6 +9,11 @@
 #include "IEcoSystem1.h"
 #include "IEcoInterfaceBus1.h"
 #include "polyfit_bus.h"
+#include "IdEcoLab2.h"
+#include "IEcoCalculatorX.h"
+#include "IEcoCalculatorY.h"
+#include "IEcoLab1.h"
+#include "IEcoLab2.h"
 
 static uint32_t checks;
 static uint32_t failures;
@@ -42,6 +47,78 @@ static void check_polynomial(IEcoPolynomialMathPtr component) {
     check(close_to(coefficients[1], -2.0, 1.0e-8));
     check(close_to(coefficients[2], 0.5, 1.0e-8));
     check(close_to(coefficients[3], 3.0, 1.0e-8));
+}
+
+static void check_calculator_components(IEcoInterfaceBus1* bus) {
+    const UGUID* ids[5]; uint32_t i; voidptr_t value; int16_t status;
+    IEcoCalculatorX* x; IEcoCalculatorY* y; double result;
+    ids[0] = &CID_EcoCalculatorA; ids[1] = &CID_EcoCalculatorB;
+    ids[2] = &CID_EcoCalculatorC; ids[3] = &CID_EcoCalculatorD;
+    ids[4] = &CID_EcoCalculatorE;
+    for (i = 0u; i < 5u; ++i) {
+        value = 0; x = 0; y = 0;
+        if (i < 3u) {
+            status = bus->pVTbl->QueryComponent(bus, ids[i], 0,
+                &IID_IEcoCalculatorX, &value);
+            x = (IEcoCalculatorX*)value;
+            check(status == ERR_ECO_SUCCESS && x != 0);
+            if (x != 0) {
+                check(x->pVTbl->Addition(x, 3.0, 5.0) == 8.0);
+                check(x->pVTbl->Subtraction(x, 3.0, 5.0) == -2.0);
+                x->pVTbl->Release(x);
+            }
+        } else {
+            status = bus->pVTbl->QueryComponent(bus, ids[i], 0,
+                &IID_IEcoCalculatorY, &value);
+            y = (IEcoCalculatorY*)value;
+            check(status == ERR_ECO_SUCCESS && y != 0);
+            if (y != 0) {
+                check(y->pVTbl->Multiplication(y, 3.0, 5.0) == 15.0);
+                check(y->pVTbl->Division(y, 15.0, 3.0) == 5.0);
+                result = 9.0;
+                check(y->pVTbl->TryDivision(y, 1.0, 0.0, &result) != ERR_ECO_SUCCESS && result == 0.0);
+                y->pVTbl->Release(y);
+            }
+        }
+    }
+}
+
+static void check_lab2_graph(IEcoInterfaceBus1* bus) {
+    IEcoLab2* lab2; IEcoLab1* lab1; IEcoCalculatorX* x; IEcoCalculatorY* y;
+    IEcoUnknown* outer; IEcoUnknown* inner; int16_t status; double result;
+    lab2 = 0; lab1 = 0; x = 0; y = 0; outer = 0; inner = 0;
+    status = bus->pVTbl->QueryComponent(bus, &CID_EcoLab2, 0,
+        &IID_IEcoLab2, (voidptr_t*)&lab2);
+    check(status == ERR_ECO_SUCCESS && lab2 != 0);
+    if (lab2 == 0) return;
+    status = lab2->pVTbl->QueryInterface(lab2, &IID_IEcoLab1, (voidptr_t*)&lab1);
+    check(status == ERR_ECO_SUCCESS && lab1 != 0);
+    status = lab2->pVTbl->QueryInterface(lab2, &IID_IEcoCalculatorX, (voidptr_t*)&x);
+    check(status == ERR_ECO_SUCCESS && x != 0);
+    status = lab2->pVTbl->QueryInterface(lab2, &IID_IEcoCalculatorY, (voidptr_t*)&y);
+    check(status == ERR_ECO_SUCCESS && y != 0);
+    if (x != 0) { check(x->pVTbl->Addition(x, 10.0, 2.0) == 12.0); x->pVTbl->Release(x); }
+    if (y != 0) { check(y->pVTbl->Multiplication(y, 6.0, 7.0) == 42.0); y->pVTbl->Release(y); }
+    if (lab1 != 0) {
+        status = lab1->pVTbl->QueryInterface(lab1, &IID_IEcoCalculatorX, (voidptr_t*)&x);
+        check(status == ERR_ECO_SUCCESS && x != 0);
+        if (x != 0) { check(x->pVTbl->Subtraction(x, 9.0, 4.0) == 5.0); x->pVTbl->Release(x); }
+        lab1->pVTbl->Release(lab1);
+    }
+    status = lab2->pVTbl->QueryInterface(lab2, &IID_IEcoUnknown, (voidptr_t*)&outer);
+    check(status == ERR_ECO_SUCCESS && outer != 0);
+    if (outer != 0) {
+        status = lab2->pVTbl->QueryInterface(lab2, &IID_IEcoLab1, (voidptr_t*)&lab1);
+        if (lab1 != 0) {
+            status = lab1->pVTbl->QueryInterface(lab1, &IID_IEcoUnknown, (voidptr_t*)&inner);
+            check(status == ERR_ECO_SUCCESS && inner == outer);
+            if (inner != 0) inner->pVTbl->Release(inner);
+            lab1->pVTbl->Release(lab1);
+        }
+        outer->pVTbl->Release(outer);
+    }
+    result = 0.0; (void)result;
+    lab2->pVTbl->Release(lab2);
 }
 
 static void check_constant_and_scale(IEcoPolynomialMathPtr component) {
@@ -165,11 +242,13 @@ int16_t EcoMain(IEcoUnknown* unknown) {
         system->pVTbl->Release(system); return status;
     }
 #ifdef ECO_LIB
-    status = PolyfitComponent_RegisterOnBus(bus);
+    status = EcoLab2_RegisterOnBus(bus);
     if (status != ERR_ECO_SUCCESS) {
         bus->pVTbl->Release(bus); system->pVTbl->Release(system); return status;
     }
 #endif
+    check_calculator_components(bus);
+    check_lab2_graph(bus);
     for (i = 0u; i < 2u; ++i) {
         component = 0;
         status = bus->pVTbl->QueryComponent(bus, ids[i], 0,
@@ -178,6 +257,12 @@ int16_t EcoMain(IEcoUnknown* unknown) {
         if (component != 0) { verify_component(component); component->pVTbl->Release(component); }
     }
 #ifdef ECO_LIB
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoLab2);
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorE);
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorD);
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorC);
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorB);
+    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorA);
     bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
     bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
 #endif

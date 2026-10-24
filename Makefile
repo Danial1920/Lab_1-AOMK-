@@ -36,12 +36,12 @@ matrix:
 ECO_FRAMEWORK ?= $(CURDIR)/DependenciesFiles
 ECO_INC = $(INC) -I$(ECO_FRAMEWORK)/Eco.FileSystemManagement1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.MemoryManager1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.InterfaceBus1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.System1/SharedFiles
 ECO_LIBRARIES = $(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a $(ECO_FRAMEWORK)/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a $(ECO_FRAMEWORK)/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a $(ECO_FRAMEWORK)/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a
-ECO_SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c
+ECO_SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c
 .PHONY: eco-build eco-test
 eco-build: $(BUILD)/EcoLab1EcoTest
 eco-test: eco-build
 	./$(BUILD)/EcoLab1EcoTest
-	@echo "ECO TESTS PASSED: Gaussian and QR components"
+	@echo "ECO TESTS PASSED: Lab1, Lab2 and A-E calculator graph"
 $(BUILD)/EcoLab1EcoTest: $(ECO_SOURCES) $(wildcard HeaderFiles/*.h)
 	@mkdir -p $(BUILD)
 	@test -f "$(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a" || (echo "ECO_FRAMEWORK is missing Mac/arm64 Eco libraries"; exit 2)

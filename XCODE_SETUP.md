@@ -6,6 +6,8 @@
 4. В Xcode Settings → Locations → Custom Paths добавьте `ECO_FRAMEWORK` со значением каталога распакованного Eco Framework.
 5. Для компонента соберите схемы `Static` и `Dynamic` в конфигурациях `Debug` и `Release`. Для UnitTest доступны `Static/Debug` и `Static/Release`.
 
+Для лабораторной работы №2 используйте ветку `lab2`. В ней те же Xcode-проекты собирают дополнительные исходники `CalculatorComponents.c` и `EcoLab2.c`; полный Eco UnitTest регистрирует Lab1, Lab2 и компоненты A–E и выполняет 103 проверки.
+
 Проверка из терминала:
 
 ```sh

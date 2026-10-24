@@ -5,9 +5,9 @@ OUT="$ROOT/BuildFiles/StrictC89"
 CC=${CC:-gcc}
 mkdir -p "$OUT"
 COMMON="-std=c89 -pedantic -Wall -Wextra -Wcast-qual -Werror -fno-stack-protector"
-for source in CEcoLab1Generated.c CEcoLab1GeneratedFactory.c polyfit_bus.c; do
+for source in CEcoLab1Generated.c CEcoLab1GeneratedFactory.c CalculatorComponents.c EcoLab2.c polyfit_bus.c; do
   # Eco.Core1 contains legacy anonymous unions; suppress only that upstream warning.
-  $CC $COMMON -Wno-c11-extensions -DECO_APPLE \
+  $CC $COMMON -Wno-c11-extensions -DECO_APPLE -DECO_AARCH64 -DECO_LIB \
     "-I$ROOT/DependenciesFiles/Eco.Core1/SharedFiles" \
     "-I$ROOT/DependenciesFiles/Eco.InterfaceBus1/SharedFiles" \
     "-I$ROOT/DependenciesFiles/Eco.MemoryManager1/SharedFiles" \

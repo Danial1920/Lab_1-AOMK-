@@ -20,6 +20,10 @@
 		01138AE927F1BE4900734060 /* CEcoLab1GeneratedFactory.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AE627F1BE4900734060 /* CEcoLab1GeneratedFactory.c */; };
 		01138AEA27F1BE4900734060 /* CEcoLab1GeneratedFactory.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AE627F1BE4900734060 /* CEcoLab1GeneratedFactory.c */; };
 		01138AEB27F1BE4900734060 /* polyfit_bus.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AEC27F1BE4900734060 /* polyfit_bus.c */; };
+		01138AF027F1BE4900734060 /* CalculatorComponents.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AED27F1BE4900734060 /* CalculatorComponents.c */; };
+		01138AF127F1BE4900734060 /* EcoLab2.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AEE27F1BE4900734060 /* EcoLab2.c */; };
+		01138AF227F1BE4900734060 /* CalculatorComponents.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AED27F1BE4900734060 /* CalculatorComponents.c */; };
+		01138AF327F1BE4900734060 /* EcoLab2.c in Sources */ = {isa = PBXBuildFile; fileRef = 01138AEE27F1BE4900734060 /* EcoLab2.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +36,8 @@
 		01138AE527F1BE4900734060 /* CEcoLab1Generated.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CEcoLab1Generated.c; path = ../../../SourceFiles/CEcoLab1Generated.c; sourceTree = "<group>"; };
 		01138AE627F1BE4900734060 /* CEcoLab1GeneratedFactory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CEcoLab1GeneratedFactory.c; path = ../../../SourceFiles/CEcoLab1GeneratedFactory.c; sourceTree = "<group>"; };
 		01138AEC27F1BE4900734060 /* polyfit_bus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = polyfit_bus.c; path = ../../../SourceFiles/polyfit_bus.c; sourceTree = "<group>"; };
+		01138AED27F1BE4900734060 /* CalculatorComponents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CalculatorComponents.c; path = ../../../SourceFiles/CalculatorComponents.c; sourceTree = "<group>"; };
+		01138AEE27F1BE4900734060 /* EcoLab2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = EcoLab2.c; path = ../../../SourceFiles/EcoLab2.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +83,8 @@
 				01138AE527F1BE4900734060 /* CEcoLab1Generated.c */,
 				01138AE627F1BE4900734060 /* CEcoLab1GeneratedFactory.c */,
 				01138AEC27F1BE4900734060 /* polyfit_bus.c */,
+				01138AED27F1BE4900734060 /* CalculatorComponents.c */,
+				01138AEE27F1BE4900734060 /* EcoLab2.c */,
 			);
 			name = "Source Files";
 			sourceTree = "<group>";
@@ -206,6 +214,8 @@
 				01138AE727F1BE4900734060 /* CEcoLab1Generated.c in Sources */,
 				01138AE927F1BE4900734060 /* CEcoLab1GeneratedFactory.c in Sources */,
 				01138AEB27F1BE4900734060 /* polyfit_bus.c in Sources */,
+				01138AF027F1BE4900734060 /* CalculatorComponents.c in Sources */,
+				01138AF127F1BE4900734060 /* EcoLab2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +226,8 @@
 				01138AE827F1BE4900734060 /* CEcoLab1Generated.c in Sources */,
 				01138AEA27F1BE4900734060 /* CEcoLab1GeneratedFactory.c in Sources */,
 				01138AEB27F1BE4900734060 /* polyfit_bus.c in Sources */,
+				01138AF227F1BE4900734060 /* CalculatorComponents.c in Sources */,
+				01138AF327F1BE4900734060 /* EcoLab2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

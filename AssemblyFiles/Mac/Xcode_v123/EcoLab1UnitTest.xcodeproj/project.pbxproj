@@ -11,6 +11,8 @@
 		01C71230A000000000000001 /* CEcoLab1Generated.c in Sources */ = {isa = PBXBuildFile; fileRef = 01C71231A000000000000001 /* CEcoLab1Generated.c */; };
 		01C71232A000000000000001 /* CEcoLab1GeneratedFactory.c in Sources */ = {isa = PBXBuildFile; fileRef = 01C71233A000000000000001 /* CEcoLab1GeneratedFactory.c */; };
 		01C71234A000000000000001 /* polyfit_bus.c in Sources */ = {isa = PBXBuildFile; fileRef = 01C71235A000000000000001 /* polyfit_bus.c */; };
+		01C71236A000000000000001 /* CalculatorComponents.c in Sources */ = {isa = PBXBuildFile; fileRef = 01C71237A000000000000001 /* CalculatorComponents.c */; };
+		01C71238A000000000000001 /* EcoLab2.c in Sources */ = {isa = PBXBuildFile; fileRef = 01C71239A000000000000001 /* EcoLab2.c */; };
 		01C7121E27F2119C00AE9906 /* lib00000000000000000000000053595333.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01C7121D27F2119C00AE9906 /* lib00000000000000000000000053595333.a */; };
 		01C7122127F211C900AE9906 /* lib00000000000000000000000046534D31.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01C7122027F211C900AE9906 /* lib00000000000000000000000046534D31.a */; };
 		01C7122327F211DC00AE9906 /* lib00000000000000000000000042757331.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01C7122227F211DC00AE9906 /* lib00000000000000000000000042757331.a */; };
@@ -34,6 +36,8 @@
 		01C71231A000000000000001 /* CEcoLab1Generated.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CEcoLab1Generated.c; path = ../../../SourceFiles/CEcoLab1Generated.c; sourceTree = "<group>"; };
 		01C71233A000000000000001 /* CEcoLab1GeneratedFactory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CEcoLab1GeneratedFactory.c; path = ../../../SourceFiles/CEcoLab1GeneratedFactory.c; sourceTree = "<group>"; };
 		01C71235A000000000000001 /* polyfit_bus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = polyfit_bus.c; path = ../../../SourceFiles/polyfit_bus.c; sourceTree = "<group>"; };
+		01C71237A000000000000001 /* CalculatorComponents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = CalculatorComponents.c; path = ../../../SourceFiles/CalculatorComponents.c; sourceTree = "<group>"; };
+		01C71239A000000000000001 /* EcoLab2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = EcoLab2.c; path = ../../../SourceFiles/EcoLab2.c; sourceTree = "<group>"; };
 		01C7120D27F20FD800AE9906 /* EcoLab1Generated.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = EcoLab1Generated.c; path = ../../../UnitTestFiles/SourceFiles/EcoLab1Generated.c; sourceTree = "<group>"; };
 		01C7121927F2117100AE9906 /* BuildFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BuildFiles; path = ../../../../Eco.System1/BuildFiles; sourceTree = "<group>"; };
 		01C7121D27F2119C00AE9906 /* lib00000000000000000000000053595333.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib00000000000000000000000053595333.a; path = "$(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a"; sourceTree = "<group>"; };
@@ -95,6 +99,8 @@
 				01C71231A000000000000001 /* CEcoLab1Generated.c */,
 				01C71233A000000000000001 /* CEcoLab1GeneratedFactory.c */,
 				01C71235A000000000000001 /* polyfit_bus.c */,
+				01C71237A000000000000001 /* CalculatorComponents.c */,
+				01C71239A000000000000001 /* EcoLab2.c */,
 			);
 			name = "Source Files";
 			sourceTree = "<group>";
@@ -173,6 +179,8 @@
 				01C71230A000000000000001 /* CEcoLab1Generated.c in Sources */,
 				01C71232A000000000000001 /* CEcoLab1GeneratedFactory.c in Sources */,
 				01C71234A000000000000001 /* polyfit_bus.c in Sources */,
+				01C71236A000000000000001 /* CalculatorComponents.c in Sources */,
+				01C71238A000000000000001 /* EcoLab2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

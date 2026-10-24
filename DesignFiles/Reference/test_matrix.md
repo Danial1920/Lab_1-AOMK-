@@ -1,5 +1,17 @@
 # Матрица проверок
 
+## Лабораторная работа №2
+
+| Группа | Проверки |
+|---|---|
+| A–E | Получение пяти компонентов через CID и Interface Bus |
+| CalculatorX | Addition/Subtraction |
+| CalculatorY | Multiplication/Division/TryDivision |
+| QueryInterface | Lab1↔X/Y, Lab2→Lab1/X/Y, неизвестный IID |
+| Aggregation | controlling unknown для B/E/Lab1 |
+| Контроль | AddRef/Release, деление на ноль, ненулевой код ошибки |
+| Eco integration | 103 проверки, 103 успешных |
+
 | Группа | Проверки |
 |---|---|
 | Численный результат | Квадратичный, кубический, постоянный и линейный наборы |

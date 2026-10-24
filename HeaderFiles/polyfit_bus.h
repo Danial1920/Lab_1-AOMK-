@@ -10,6 +10,8 @@
 #include "IEcoInterfaceBus1.h"
 #include "IEcoPolynomialMath.h"
 #include "IdEcoPolynomialMath.h"
+#include "IdEcoLab2.h"
 int16_t PolyfitComponent_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus);
 int16_t PolyfitComponent_QueryFromBus(IEcoInterfaceBus1Ptr_t bus, IEcoPolynomialMathPtr* component);
+int16_t EcoLab2_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus);
 #endif

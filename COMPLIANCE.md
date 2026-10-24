@@ -4,10 +4,19 @@
 
 - Все публичные методы принимают `me`, проверяют входы и возвращают `int16_t`.
 - `QueryInterface` поддерживает `IID_IEcoPolynomialMath`, `IID_IEcoPolynomial` и `IID_IEcoUnknown` и увеличивает счётчик ссылок.
-- Фабрика отклоняет агрегацию, освобождает временные ссылки на шину и allocator.
+- Фабрика Eco.Lab1 принимает pIUnknownOuter для агрегирования; фабрика Eco.Lab2 остаётся внешней точкой создания и отклоняет собственную агрегацию.
 - Экземпляр компонента удерживает собственную ссылку на `IEcoSystem1` и освобождает её до allocator.
 - Объект `IEcoPolynomial` владеет собственной ссылкой на allocator и освобождается ровно один раз.
 - Рабочие буферы получаются только через `IEcoMemoryAllocator1`.
+
+## Лабораторная работа №2: включение и агрегирование
+
+- `IEcoCalculatorX` и `IEcoCalculatorY` доступны через `QueryInterface` из `Eco.Lab1`.
+- `Eco.Lab2` выдаёт `IEcoLab1`, `IEcoCalculatorX` и `IEcoCalculatorY`.
+- A, C и D подключаются как включённые компоненты.
+- B, E и `Eco.Lab1` создаются с внешним controlling unknown `Eco.Lab2`.
+- Для A–E, `Eco.Lab1` и `Eco.Lab2` определены отдельные CID и factory.
+- Агрегированный `IEcoUnknown` возвращает identity внешнего `Eco.Lab2`.
 
 ## Ограничения C89
 
@@ -18,7 +27,7 @@
 ## Реальные проверки
 
 - `make test` — 72 проверки Host UnitTest;
-- `make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test` — 76 проверок обеих реализаций через Eco Interface Bus;
+- `make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test` — 103 проверки Lab1, Lab2 и A–E через Eco Interface Bus;
 - Xcode Static и Dynamic Debug/Release для компонента, Static Debug/Release для UnitTest;
 - macOS Dynamic runtime собирается двумя артефактами: обычным и QR с отдельной экспортируемой фабрикой;
 - `DesignFiles/Report/check_no_libc.sh` — поиск запрещённых включений/вызовов и `nm -u` для объектных файлов компонента.

@@ -3,8 +3,8 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 OUT="$ROOT/BuildFiles/NoLibc"
 mkdir -p "$OUT"
-for source in CEcoLab1Generated.c CEcoLab1GeneratedFactory.c polyfit_bus.c; do
-  clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE \
+for source in CEcoLab1Generated.c CEcoLab1GeneratedFactory.c CalculatorComponents.c EcoLab2.c polyfit_bus.c; do
+  clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -DECO_AARCH64 -DECO_LIB \
     -I"$ROOT/DependenciesFiles/Eco.Core1/SharedFiles" \
     -I"$ROOT/DependenciesFiles/Eco.InterfaceBus1/SharedFiles" \
     -I"$ROOT/DependenciesFiles/Eco.MemoryManager1/SharedFiles" \
