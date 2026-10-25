@@ -255,9 +255,23 @@ PAIR(long double, LongDoublePair)
 PAIR(int, IntPair)
 PAIR(long, LongPair)
 
+/* Integer inputs must reach the floating solver without silently losing
+ * low bits. Split before conversion; both the 16-bit remainder and scaled
+ * quotient are exact even when long double has only a double mantissa.
+ * No floating-to-integer cast (undefined at rounded LONG_MAX) is needed. */
+static int integer_input_exact(long value) {
+    long double high;
+    high = (long double)(value / 65536L) * 65536.0L;
+    return (long double)value - high == (long double)(value % 65536L);
+}
+static int floating_input_exact(long double value) {
+    (void)value;
+    return 1;
+}
+
 /* Generate one typed entry point; conversion is arithmetic and the final
  * same-type transfer uses IEcoMemoryAllocator1::Copy. */
-#define API(S,T,O,N,LIMIT) \
+#define API(S,T,O,N,LIMIT,VALIDATE) \
 int16_t S##_00000045(/* in */ IEcoMemoryAllocator1* memory, \
     /* in */ const T* x, /* in */ const T* y, /* in */ uint32_t count, \
     /* in */ uint32_t degree, /* out */ O* out, /* in */ uint32_t method) { \
@@ -269,6 +283,9 @@ int16_t S##_00000045(/* in */ IEcoMemoryAllocator1* memory, \
     bytes = (uint32_t)(sizeof(O) * (degree + 1u)); \
     memory->pVTbl->Fill(memory, out, 0, bytes); \
     if (x == 0 || y == 0) return ERR_ECO_POINTER; \
+    if (count < degree + 1u || count > ECO_POLYFIT_MAX_COUNT || method > 1u) return ERR__POLYFIT_ARGUMENT; \
+    for (i = 0u; i < count; ++i) \
+        if (!VALIDATE(x[i]) || !VALIDATE(y[i])) return ERR__POLYFIT_PRECISION; \
     if (sizeof(long double) > 0xFFFFFFFFu / (2u * MAX_ORDER)) return ERR_ECO_OUTOFMEMORY; \
     result = (long double*)memory->pVTbl->Alloc(memory, (uint32_t)(sizeof(long double) * 2u * MAX_ORDER)); \
     if (result == 0) return ERR_ECO_OUTOFMEMORY; \
@@ -285,8 +302,8 @@ int16_t S##_00000045(/* in */ IEcoMemoryAllocator1* memory, \
     memory->pVTbl->Free(memory, result); \
     return status; \
 }
-API(polyfit_solve, double, double, DoublePair, 1.7976931348623157e308L)
-API(polyfit_solve_float, float, float, FloatPair, 3.4028234663852886e38L)
-API(polyfit_solve_long_double, long double, long double, LongDoublePair, 0.0L)
-API(polyfit_solve_int, int, double, IntPair, 1.7976931348623157e308L)
-API(polyfit_solve_long, long, long double, LongPair, 0.0L)
+API(polyfit_solve, double, double, DoublePair, 1.7976931348623157e308L, floating_input_exact)
+API(polyfit_solve_float, float, float, FloatPair, 3.4028234663852886e38L, floating_input_exact)
+API(polyfit_solve_long_double, long double, long double, LongDoublePair, 0.0L, floating_input_exact)
+API(polyfit_solve_int, int, double, IntPair, 1.7976931348623157e308L, integer_input_exact)
+API(polyfit_solve_long, long, long double, LongPair, 0.0L, integer_input_exact)

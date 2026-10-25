@@ -11,7 +11,7 @@
 | Reference lifetime | Баланс AddRef/Release, ранний Release корня, живые дочерние интерфейсы | Eco integration |
 | Fault injection | Отказ allocator, неизвестный IID в factory, очистка частичного графа | Eco integration |
 | Деление | Отрицательные/дробные/нулевые аргументы, TryDivision с нулём/NULL | Host + Eco |
-| Численные регрессии | Обе реализации, пять типов, FitVector, IEcoPolynomial | Host + Eco |
+| Численные регрессии | Обе реализации, пять типов, точность long и ошибка 1005, FitVector, IEcoPolynomial | Host + Eco |
 | C89 | Компонентные исходники, строгие предупреждения | make strict |
 | Отсутствие libc | Запрещённые заголовки/вызовы, nm undefined symbols | make check-no-libc |
 | Sanitizer | AddressSanitizer/UBSan для Host и реального Eco-клиента | make sanitize |
@@ -25,4 +25,4 @@
 
 Полный прогон: `make ECO_FRAMEWORK="$ECO_FRAMEWORK" check eco-test`. Количества проверок и ошибки выводятся в консоль; тест возвращает ненулевой код при ошибке или нарушении ожидаемого плана. Сборочные инструкции платформ за пределами macOS не являются свидетельством выполненного запуска.
 
-Последний полный прогон: Host 167/0, Eco 953/0, tracked allocator 348/348/live 0; Dynamic Debug и Release по 44/0; валидатор эталонов 8/8. Числа являются счётчиками проверенных условий, а не процентом покрытия.
+Последний полный прогон: Host 183/0, Eco 977/0, tracked allocator 345/345/live 0; Dynamic Debug и Release по 44/0; валидатор эталонов 8/8. Числа являются счётчиками проверенных условий, а не процентом покрытия.

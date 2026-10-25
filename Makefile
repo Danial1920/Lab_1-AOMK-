@@ -14,10 +14,10 @@ all: $(TARGET)
 # flags/Framework paths and sub-second edits with macOS' legacy GNU make.
 $(TARGET): $(SOURCES) $(HEADERS) Makefile FORCE
 	@mkdir -p "$(BUILD)"
-	$(CC) $(CFLAGS) $(INC) $(SOURCES) -o $@
+	$(CC) $(CFLAGS) $(INC) $(SOURCES) -o "$@"
 
 test: $(TARGET)
-	./$(TARGET)
+	"$(TARGET)"
 
 strict:
 	DesignFiles/Report/check_strict_c89.sh
@@ -48,11 +48,11 @@ ECO_HEADERS = $(wildcard $(ECO_FRAMEWORK)/*/SharedFiles/*.h)
 .PHONY: eco-build eco-test
 eco-build: $(BUILD)/EcoLab1EcoTest
 eco-test: eco-build
-	./$(BUILD)/EcoLab1EcoTest
+	"$(BUILD)/EcoLab1EcoTest"
 	@echo "ECO TESTS PASSED: real Interface Bus, Lab1/Lab2/A-E and failure paths"
 $(BUILD)/EcoLab1EcoTest: $(ECO_SOURCES) $(HEADERS) $(ECO_HEADERS) $(ECO_LIBRARIES) Makefile FORCE
 	@mkdir -p "$(BUILD)"
-	$(CC) $(CFLAGS) -DECO_AARCH64 -DECO_LIB $(ECO_INC) $(ECO_SOURCES) $(ECO_LIBRARIES) -o $@
+	$(CC) $(CFLAGS) -DECO_AARCH64 -DECO_LIB $(ECO_INC) $(ECO_SOURCES) $(ECO_LIBRARIES) -o "$@"
 
 verify: check eco-test reference matlab-reference validation-build
 

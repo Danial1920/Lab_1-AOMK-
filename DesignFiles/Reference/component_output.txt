@@ -16,4 +16,4 @@ REFERENCE {"case":"huge_x_constant","method":1,"coefficients":[7]}
 REFERENCE {"case":"huge_y_constant","method":1,"coefficients":[1e+308]}
 REFERENCE {"case":"noisy_linear","method":1,"coefficients":[1.9799999999999995,3]}
 REFERENCE {"case":"opposite_extremes","method":1,"coefficients":[1,0]}
-Проверок: 167, ошибок: 0
+Проверок: 183, ошибок: 0

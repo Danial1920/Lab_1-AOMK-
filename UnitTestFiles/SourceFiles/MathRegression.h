@@ -1,4 +1,37 @@
 /* Shared executable numerical regressions; this file contains tests only. */
+#include <limits.h>
+#include <float.h>
+static void check_integer_precision(IEcoPolynomialMath* component) {
+    const long maximum[1] = {LONG_MAX};
+    const long minimum[1] = {LONG_MIN};
+    const long zero[1] = {0L};
+    const long seven[1] = {7L};
+    long double result[2]; int16_t status; int loss;
+#if LONG_MAX > 2147483647L
+    const long boundary_x[3] = {9007199254740992L, 9007199254740993L, 9007199254740994L};
+    const long boundary_y[3] = {0L, 1L, 2L};
+    loss = LDBL_MANT_DIG < 54;
+    result[0] = 123.0L; result[1] = 456.0L;
+    status = component->pVTbl->polyfit_long(component, boundary_x, boundary_y, 3u, 1u, result);
+    check(status == (loss ? ERR__POLYFIT_PRECISION : ERR_ECO_SUCCESS));
+    check(loss ? (result[0] == 0.0L && result[1] == 0.0L) :
+        (close_long_double(result[0], 1.0L, 1.0e-12L) &&
+         close_long_double(result[1], -9007199254740992.0L, 1.0L)));
+#endif
+    loss = LDBL_MANT_DIG < (int)(sizeof(long) * CHAR_BIT - 1u);
+    result[0] = 123.0L;
+    status = component->pVTbl->polyfit_long(component, maximum, seven, 1u, 0u, result);
+    check(status == (loss ? ERR__POLYFIT_PRECISION : ERR_ECO_SUCCESS));
+    check(result[0] == (loss ? 0.0L : 7.0L));
+    result[0] = 123.0L;
+    status = component->pVTbl->polyfit_long(component, zero, maximum, 1u, 0u, result);
+    check(status == (loss ? ERR__POLYFIT_PRECISION : ERR_ECO_SUCCESS));
+    check(result[0] == (loss ? 0.0L : (long double)LONG_MAX));
+    result[0] = 123.0L;
+    status = component->pVTbl->polyfit_long(component, minimum, seven, 1u, 0u, result);
+    check(status == ERR_ECO_SUCCESS);
+    check(result[0] == 7.0L);
+}
 static void check_extended_math(IEcoPolynomialMath* component) {
     const double tiny[3] = {-1.0e-310, 0.0, 1.0e-310};
     const double huge_x[3] = {1.0e308, 1.0e308, 1.0e308};
@@ -11,6 +44,7 @@ static void check_extended_math(IEcoPolynomialMath* component) {
     double bad[5]; double out[3]; volatile double zero;
     EcoVectorView vx; EcoVectorView vy; IEcoPolynomial* polynomial;
     IEcoUnknown* unknown; int16_t status; uint32_t i;
+    check_integer_precision(component);
     status = component->pVTbl->polyfit(component, tiny, tiny, 3u, 1u, out);
     check(status == ERR_ECO_SUCCESS);
     check(close_to(out[0], 1.0, 1.0e-12) && close_to(out[1], 0.0, 1.0e-320));
