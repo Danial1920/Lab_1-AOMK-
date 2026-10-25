@@ -433,7 +433,7 @@
 					ECO_AARCH64,
 					"$(inherited)",
 				);
-				PRODUCT_NAME = "$(PRODUCT_NAME)";
+				PRODUCT_NAME = D3B3E2F18D214A6B9A40440000000045;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -453,7 +453,7 @@
 					ECO_AARCH64,
 					"$(inherited)",
 				);
-				PRODUCT_NAME = "$(PRODUCT_NAME)";
+				PRODUCT_NAME = D3B3E2F18D214A6B9A40440000000045;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

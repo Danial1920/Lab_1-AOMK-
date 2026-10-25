@@ -1,50 +1,19 @@
-# Сборка в Xcode
+# Xcode на macOS arm64
 
-1. Установите Xcode.
-2. Распакуйте официальный архив `Eco.Framework_20260918.zip` в удобный каталог.
-3. Откройте `AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj` и `EcoLab1UnitTest.xcodeproj`.
-4. В Xcode Settings → Locations → Custom Paths добавьте `ECO_FRAMEWORK` со значением каталога распакованного Eco Framework.
-5. Для компонента соберите схемы `Static` и `Dynamic` в конфигурациях `Debug` и `Release`. Для UnitTest доступны `Static/Debug` и `Static/Release`.
+Полные команды сборки и запуска находятся в [README](README.md#xcode-static-debug-и-release), команды Dynamic runtime — в [соответствующем разделе](README.md#настоящий-dynamic-runtime).
 
-Лабораторная работа №2 находится в той же основной ветке `main`: те же Xcode-проекты собирают дополнительные исходники `CalculatorComponents.c` и `EcoLab2.c`; полный Eco UnitTest регистрирует Lab1, Lab2 и компоненты A–E и выполняет 108 проверок.
+Для обоих проектов задайте `ECO_FRAMEWORK` в Xcode Settings → Locations → Custom Paths, указав распакованный официальный архив. Откройте `AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj` и `EcoLab1UnitTest.xcodeproj`.
 
-Проверка из терминала:
+| Проект | Схема | Конфигурации | Назначение |
+|---|---|---|---|
+| EcoLab1 | Static | Debug, Release | Одна статическая библиотека всех компонентов Lab1/Lab2/A–E |
+| EcoLab1 | Dynamic | Debug, Release | Одна экспортируемая фабрика; для полного runtime нужен скрипт восьми CID |
+| EcoLab1UnitTest | Static | Debug, Release | Консольный интеграционный UnitTest |
 
-```sh
-xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
-  -scheme Static -configuration Debug \
-  -derivedDataPath BuildFiles/XcodeComponentDebug \
-  ECO_FRAMEWORK=/path/to/Eco.Framework CODE_SIGNING_ALLOWED=NO build
+Изменённые исходники: `CEcoLab1GeneratedFactory.c`, `CalculatorComponents.c`, `EcoLab2.c`, `polyfit_bus.c`. Численное ядро сохранено. Для отдельного CID Dynamic-сборка использует селекторы `POLYFIT_QR_ONLY`, `ECO_CALCULATOR_KIND=0..4` или `ECO_LAB2_ONLY`.
 
-xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
-  -scheme Static -configuration Release \
-  -derivedDataPath BuildFiles/XcodeComponentRelease \
-  ECO_FRAMEWORK=/path/to/Eco.Framework CODE_SIGNING_ALLOWED=NO build
+Сборка UnitTest не равна запуску: для воспроизводимого запуска используйте `make ECO_FRAMEWORK="$ECO_FRAMEWORK" eco-test`. Для реальной загрузки dylib — `DesignFiles/Report/build_dynamic_runtime_macos.sh`, который сам собирает и запускает отдельный клиент.
 
-xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
-  -scheme Dynamic -configuration Release \
-  -derivedDataPath BuildFiles/XcodeComponentDynamicRelease \
-  ECO_FRAMEWORK=/path/to/Eco.Framework CODE_SIGNING_ALLOWED=NO build
+Каждый процесс Xcode должен иметь отдельный `derivedDataPath`; скрипт runtime использует каталог для каждого CID/конфигурации и `-jobs 1`. Не запускайте одновременно IDE и терминал с одним каталогом. Если build.db занят, остановите конкурирующую сборку либо задайте новый каталог.
 
-xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
-  -scheme Static -configuration Debug \
-  -derivedDataPath BuildFiles/XcodeUnitDebug \
-  ECO_FRAMEWORK=/path/to/Eco.Framework CODE_SIGNING_ALLOWED=NO build
-
-xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
-  -scheme Static -configuration Release \
-  -derivedDataPath BuildFiles/XcodeUnitRelease \
-  ECO_FRAMEWORK=/path/to/Eco.Framework CODE_SIGNING_ALLOWED=NO build
-```
-
-Компонент не содержит локального `StdIOShim` и не использует libc. В поставленном на macOS arm64 архиве отсутствует библиотека `Eco.StdIO.C89`, поэтому Eco-клиент печатает итоговую строку через стандартный вывод клиентского процесса. Это ограничение относится только к консольному клиенту; численный компонент проверяется отдельно через `nm -u` и `check_no_libc.sh`.
-
-После Dynamic-сборки выполните:
-
-```sh
-DesignFiles/Report/check_dynamic_deps.sh \
-  "BuildFiles/Mac/arm64 x86_64/DynamicRelease/4D572607A26A48C1BBC94AB2CB6CFF86.dylib"
-```
-
-Для проверки обеих Dynamic CID и внешнего Lab2 factory на macOS используйте `DesignFiles/Report/build_dynamic_runtime_macos.sh`.
-Скрипт создаёт обычный артефакт в `DynamicRelease`, QR-артефакт в `DynamicReleaseQR` и Lab2-артефакт в `DynamicReleaseLab2`. Для каждого запуска используется отдельный `-derivedDataPath`, поэтому сценарий не конфликтует с параллельной сборкой Xcode.
+Системные библиотеки берутся из официального Framework без изменений. В предоставленном архиве отсутствует Eco.StdIO.C89 arm64; stdio используется только консольными клиентами.

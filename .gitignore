@@ -15,3 +15,7 @@ AssemblyFiles/**/build/**
 AssemblyFiles/**/xcuserdata/**
 *.xcuserstate
 BuildFiles/**
+
+# Python verification caches
+__pycache__/
+*.py[cod]

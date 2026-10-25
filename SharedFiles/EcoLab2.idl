@@ -1,0 +1,43 @@
+/* ACOM Lab 2 interface contract. Author: Анвари Д.А., 24ТИДИ. */
+import "IEcoBase1.idl";
+
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000050),
+    pointer_default(unique)
+]
+interface IEcoCalculatorX : IEcoUnknown {
+    double_t Addition([in] double_t a, [in] double_t b);
+    double_t Subtraction([in] double_t a, [in] double_t b);
+};
+
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000051),
+    pointer_default(unique)
+]
+interface IEcoCalculatorY : IEcoUnknown {
+    double_t Multiplication([in] double_t a, [in] double_t b);
+    double_t Division([in] double_t a, [in] double_t b);
+    int16_t TryDivision([in] double_t a, [in] double_t b,
+                        [out] double_t* result);
+};
+
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000052),
+    pointer_default(unique)
+]
+interface IEcoLab1 : IEcoUnknown {
+};
+
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000053),
+    pointer_default(unique)
+]
+interface IEcoLab2 : IEcoUnknown {
+};
+
+/* CID declarations are in IdEcoLab2.h. New double-valued calculator IIDs
+ * intentionally differ from the integer-valued InsideACOM interfaces. */

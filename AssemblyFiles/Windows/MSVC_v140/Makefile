@@ -93,7 +93,10 @@ INC = /I "..$(SLASH)..$(SLASH)..$(SLASH)DependenciesFiles$(SLASH)Eco.Core1$(SLAS
 # Source files.
 SRC = \
 ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CEcoLab1Generated.c \
-..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CEcoLab1GeneratedFactory.c
+..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CEcoLab1GeneratedFactory.c \
+      ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CalculatorComponents.c \
+      ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)EcoLab2.c \
+      ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)polyfit_bus.c
 
 # Libraries
 LIBS = "kernel32.lib" "user32.lib" "gdi32.lib" "winspool.lib" "comdlg32.lib" "advapi32.lib" "shell32.lib" "ole32.lib" "oleaut32.lib" "uuid.lib" "odbc32.lib" "odbccp32.lib"

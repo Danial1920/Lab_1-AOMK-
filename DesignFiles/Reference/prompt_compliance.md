@@ -1,18 +1,21 @@
-# Матрица соответствия системному промпту
+# Соответствие системному промпту Lab2
 
-| Требование | Состояние | Подтверждение или ограничение |
-|---|---|---|
-| ACOM-интерфейс, фабрика, два CID | Выполнено | `IEcoPolynomialMath`, `IEcoPolynomial`, `IEcoInterfaceBus1` |
-| Память через `IEcoMemoryAllocator1` | Выполнено | `check_no_libc.sh`, Host allocator tests |
-| C89 и запрет libc в компоненте | Выполнено | `make strict`, `make check-no-libc` |
-| UTF-8 BOM/CRLF и шапки файлов | Выполнено | проверено скриптом окружения и исходниками |
-| Generic-перегрузки | Частично | объявления вынесены в `polyfit_core_template.h`; тела генерируются макросом в `.c` |
-| Обнуление out-параметров и проверки ошибок | Выполнено | Host 72 и Eco 76 проверки |
-| `nm -u`/ABI-аудит | Выполнено для macOS | `nm -u` пуст на Dynamic dylib; `otool -L` показывает platform `libSystem` |
-| Linux `readelf -d` | Не подтверждено | нужен ELF `.so` и Linux/Eco toolchain |
-| Static/Dynamic Debug/Release | Выполнено на macOS | Xcode component и UnitTest build succeeded |
-| Linux/EcoOS/ARM matrix | Не подтверждено | `make matrix` возвращает `SKIPPED` без `ECO_TOOLCHAIN` |
-| MATLAB/SciPy | SciPy выполнен | SciPy 1.18.1 выполнен; сравнение с компонентом max_abs_error = 6.83e-15; MATLAB/Octave отсутствуют в текущем окружении |
-| Итог EcoMain | Выполнено | `Проверок: 76, ошибок: 0`, ненулевой код при ошибке |
-| Benchmark | Не добавлен | в отчёте приведены тестовые объёмы, допуски и scaling graph |
-| Монотонность узлов | Не применимо | это требование spline, а не `polyfit` |
+| Требование | Реализация / подтверждение |
+|---|---|
+| Сохранение Lab1 | IEcoPolynomialMath, IEcoPolynomial, пять типов и два алгоритма; регрессионные Host/Eco-тесты |
+| Реальное включение | Lab1→C, C→A/D, D→B; операции вызывают дочерние интерфейсы |
+| Агрегирование | E→B, Lab2→Lab1; приватный неделегирующий unknown, публичный controlling unknown |
+| Фабрика с outer | Разрешён только IID_IEcoUnknown; неподдерживаемый IID/ошибка очищают частичный граф |
+| QueryInterface | Матрицы переходов, общий unknown, Lab2→Lab1→Lab2 и C.X/C.Y identity |
+| Реальный bus | В статическом Eco-тесте регистрируются реальные factory; в Dynamic-клиенте нет статической лабораторной регистрации |
+| Время жизни | Только интерфейсные Release; balance allocator и отказы создания проверяются тестами |
+| API и IDL | Новые double-IID намеренно отличаются от целочисленного InsideACOM; EcoLab2.idl описывает публичные контракты |
+| C89 и запрет libc | make strict/check-no-libc; rg/nm, отключён stack protector/builtin |
+| Sanitizer | Host и реальный Eco-клиент; Darwin LeakSanitizer недоступен, вместо него дополнительно проверяется баланс allocator |
+| Dynamic runtime | Восемь реальных CID-файлов; 44 проверки клиента; DYLD loader trace; пустой runtime завершается ошибкой |
+| Xcode | Static и Dynamic Debug/Release; команды в README, фактические результаты в отчёте |
+| Windows/Linux/EcoOS | Source lists обновлены; полноценная кроссплатформенная сборка не заявляется без toolchain |
+| MATLAB/SciPy | Свежая сборка компонента; SciPy/NumPy 36 массивов, настоящий MATLAB R2026b 18 массивов; валидатор отдельно проверяет неполные/ошибочные результаты |
+| Документ | Отдельный EcoLab2_Report.docx, архитектура/анализ/результаты; системный промпт хранится отдельно |
+
+Фактические количества проверок выводят тестовые процессы. Матрица сценариев находится в test_matrix.md. Успешная сборка не считается успешным запуском теста. Результаты macOS не считаются подтверждением Linux readelf или сборки Windows/EcoOS.

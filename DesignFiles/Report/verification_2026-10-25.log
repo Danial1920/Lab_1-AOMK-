@@ -1,0 +1,176 @@
+clang -std=c89 -Wall -Wextra -fno-stack-protector -DECO_APPLE -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c -o BuildFiles/Host/EcoLab1GeneratedUnitTest
+./BuildFiles/Host/EcoLab1GeneratedUnitTest
+REFERENCE {"case":"quadratic","method":0,"coefficients":[2,0,3]}
+REFERENCE {"case":"cubic","method":0,"coefficients":[0.99999999999999911,-1.9999999999999987,0.50000000000000466,2.9999999999999969]}
+REFERENCE {"case":"constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":0,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":0,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":0,"coefficients":[1.98,3]}
+REFERENCE {"case":"opposite_extremes","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"quadratic","method":1,"coefficients":[2,2.1065000811460208e-16,3]}
+REFERENCE {"case":"cubic","method":1,"coefficients":[0.99999999999999978,-2.0000000000000004,0.49999999999999989,3]}
+REFERENCE {"case":"constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":1,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":1,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":1,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":1,"coefficients":[1.9799999999999995,3]}
+REFERENCE {"case":"opposite_extremes","method":1,"coefficients":[1,0]}
+Проверок: 167, ошибок: 0
+DesignFiles/Report/check_strict_c89.sh
+STRICT C89 CHECK PASSED: component and both test clients
+DesignFiles/Report/check_no_libc.sh
+External component symbols: none
+External component symbols: none
+NO LIBC CHECK PASSED: source + external symbols at O0/O2
+ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework" DesignFiles/Report/check_sanitizers.sh
+clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -fsanitize=address,undefined -fno-omit-frame-pointer -g -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c -o BuildFiles/Sanitizers/EcoLab1GeneratedUnitTest
+clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -fsanitize=address,undefined -fno-omit-frame-pointer -g -DECO_AARCH64 -DECO_LIB -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.System1/SharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c /Users/danial2006/Downloads/Eco.Framework/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a /Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a /Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a /Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a -o BuildFiles/Sanitizers/EcoLab1EcoTest
+REFERENCE {"case":"quadratic","method":0,"coefficients":[2,0,3]}
+REFERENCE {"case":"cubic","method":0,"coefficients":[0.99999999999999911,-1.9999999999999987,0.50000000000000466,2.9999999999999969]}
+REFERENCE {"case":"constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":0,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":0,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":0,"coefficients":[1.98,3]}
+REFERENCE {"case":"opposite_extremes","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"quadratic","method":1,"coefficients":[2,2.1065000811460208e-16,3]}
+REFERENCE {"case":"cubic","method":1,"coefficients":[0.99999999999999978,-2.0000000000000004,0.49999999999999989,3]}
+REFERENCE {"case":"constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":1,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":1,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":1,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":1,"coefficients":[1.9799999999999995,3]}
+REFERENCE {"case":"opposite_extremes","method":1,"coefficients":[1,0]}
+Проверок: 167, ошибок: 0
+Eco allocator: allocations=348 frees=348 live=0
+Проверок: 953, ошибок: 0
+SANITIZER CHECK PASSED: Host + real Eco integration; allocator balance asserted
+/opt/anaconda3/bin/python DesignFiles/Reference/test_reference_validation.py
+test_duplicate (__main__.ValidationTests.test_duplicate) ... ok
+test_missing_case_or_algorithm (__main__.ValidationTests.test_missing_case_or_algorithm) ... ok
+test_nonfinite (__main__.ValidationTests.test_nonfinite) ... ok
+test_real_mismatch_fails (__main__.ValidationTests.test_real_mismatch_fails) ... ok
+test_reference_shape_and_nonfinite (__main__.ValidationTests.test_reference_shape_and_nonfinite) ... ok
+test_truncated_or_extra_coefficients (__main__.ValidationTests.test_truncated_or_extra_coefficients) ... ok
+test_unknown_case_or_method (__main__.ValidationTests.test_unknown_case_or_method) ... ok
+test_valid_fixture (__main__.ValidationTests.test_valid_fixture) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+OK
+clang -std=c89 -Wall -Wextra -fno-stack-protector -DECO_APPLE -DECO_AARCH64 -DECO_LIB -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.System1/SharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c /Users/danial2006/Downloads/Eco.Framework/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a /Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a /Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a /Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a -o BuildFiles/Host/EcoLab1EcoTest
+./BuildFiles/Host/EcoLab1EcoTest
+Eco allocator: allocations=348 frees=348 live=0
+Проверок: 953, ошибок: 0
+ECO TESTS PASSED: real Interface Bus, Lab1/Lab2/A-E and failure paths
+ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework" /opt/anaconda3/bin/python DesignFiles/Reference/test_build_validation.py
+BUILD DEPENDENCY MUTATIONS PASSED: headers, SharedFiles, CFLAGS, invalid Framework
+NO-LIBC NEGATIVE MUTATION PASSED: abort() detected through nm
+UNITTEST NEGATIVE MUTATION PASSED: incorrect real operation produces nonzero exit
+
+Xcode Static Debug client (component and client builds exited 0)
+Eco allocator: allocations=348 frees=348 live=0
+Проверок: 953, ошибок: 0
+
+Xcode Static Release client (component and client builds exited 0)
+Eco allocator: allocations=348 frees=348 live=0
+Проверок: 953, ошибок: 0
+
+Official Eco Dynamic Debug build and execution
+Building Debug D3B3E2F18D214A6B9A40440000000045
+Building Debug D3B3E2F18D214A6B9A40440000000046
+Building Debug D3B3E2F18D214A6B9A40440000000060
+Building Debug D3B3E2F18D214A6B9A40440000000061
+Building Debug D3B3E2F18D214A6B9A40440000000062
+Building Debug D3B3E2F18D214A6B9A40440000000063
+Building Debug D3B3E2F18D214A6B9A40440000000064
+Building Debug D3B3E2F18D214A6B9A40440000000065
+Official Eco loader runtime: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Debug
+Dynamic runtime: checks=44 failures=0
+Missing runtime: expected nonzero exit confirmed
+Runtime directory: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Debug
+Build and loader logs: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntimeLogs/Debug
+
+Official Eco Dynamic Release build and execution
+Building Release D3B3E2F18D214A6B9A40440000000045
+Building Release D3B3E2F18D214A6B9A40440000000046
+Building Release D3B3E2F18D214A6B9A40440000000060
+Building Release D3B3E2F18D214A6B9A40440000000061
+Building Release D3B3E2F18D214A6B9A40440000000062
+Building Release D3B3E2F18D214A6B9A40440000000063
+Building Release D3B3E2F18D214A6B9A40440000000064
+Building Release D3B3E2F18D214A6B9A40440000000065
+Official Eco loader runtime: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Release
+Dynamic runtime: checks=44 failures=0
+Missing runtime: expected nonzero exit confirmed
+Runtime directory: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Release
+Build and loader logs: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntimeLogs/Release
+
+Actual SciPy and NumPy comparison
+SciPy 1.15.3 scipy.linalg.lstsq; NumPy 2.1.3 numpy.linalg.lstsq
+SciPy case=constant method=0 PASS atol=1e-12 rtol=1e-12
+SciPy case=constant method=1 PASS atol=1e-12 rtol=1e-12
+SciPy case=cubic method=0 PASS atol=1e-11 rtol=1e-10
+SciPy case=cubic method=1 PASS atol=1e-11 rtol=1e-10
+SciPy case=huge_x_constant method=0 PASS atol=1e-12 rtol=1e-12
+SciPy case=huge_x_constant method=1 PASS atol=1e-12 rtol=1e-12
+SciPy case=huge_y_constant method=0 PASS atol=0.0 rtol=1e-12
+SciPy case=huge_y_constant method=1 PASS atol=0.0 rtol=1e-12
+SciPy case=large_offset method=0 PASS atol=0.001 rtol=1e-09
+SciPy case=large_offset method=1 PASS atol=0.001 rtol=1e-09
+SciPy case=noisy_linear method=0 PASS atol=1e-11 rtol=1e-10
+SciPy case=noisy_linear method=1 PASS atol=1e-11 rtol=1e-10
+SciPy case=opposite_extremes method=0 PASS atol=[1e-12, 1e+294] rtol=1e-12
+SciPy case=opposite_extremes method=1 PASS atol=[1e-12, 1e+294] rtol=1e-12
+SciPy case=quadratic method=0 PASS atol=1e-11 rtol=1e-10
+SciPy case=quadratic method=1 PASS atol=1e-11 rtol=1e-10
+SciPy case=tiny_identity method=0 PASS atol=1e-320 rtol=1e-10
+SciPy case=tiny_identity method=1 PASS atol=1e-320 rtol=1e-10
+NumPy case=constant method=0 PASS atol=1e-12 rtol=1e-12
+NumPy case=constant method=1 PASS atol=1e-12 rtol=1e-12
+NumPy case=cubic method=0 PASS atol=1e-11 rtol=1e-10
+NumPy case=cubic method=1 PASS atol=1e-11 rtol=1e-10
+NumPy case=huge_x_constant method=0 PASS atol=1e-12 rtol=1e-12
+NumPy case=huge_x_constant method=1 PASS atol=1e-12 rtol=1e-12
+NumPy case=huge_y_constant method=0 PASS atol=0.0 rtol=1e-12
+NumPy case=huge_y_constant method=1 PASS atol=0.0 rtol=1e-12
+NumPy case=large_offset method=0 PASS atol=0.001 rtol=1e-09
+NumPy case=large_offset method=1 PASS atol=0.001 rtol=1e-09
+NumPy case=noisy_linear method=0 PASS atol=1e-11 rtol=1e-10
+NumPy case=noisy_linear method=1 PASS atol=1e-11 rtol=1e-10
+NumPy case=opposite_extremes method=0 PASS atol=[1e-12, 1e+294] rtol=1e-12
+NumPy case=opposite_extremes method=1 PASS atol=[1e-12, 1e+294] rtol=1e-12
+NumPy case=quadratic method=0 PASS atol=1e-11 rtol=1e-10
+NumPy case=quadratic method=1 PASS atol=1e-11 rtol=1e-10
+NumPy case=tiny_identity method=0 PASS atol=1e-320 rtol=1e-10
+NumPy case=tiny_identity method=1 PASS atol=1e-320 rtol=1e-10
+REFERENCE COMPARISON PASSED: freshly built component; 9 cases x 2 algorithms x 2 references
+
+Actual MATLAB comparison
+MATLAB 26.2.0.3386108 (R2026b)
+Reference input conditioning is recorded in reference_cases.py.
+MATLAB case=constant method=0 PASS atol=1e-12 rtol=1e-12
+MATLAB case=constant method=1 PASS atol=1e-12 rtol=1e-12
+MATLAB case=cubic method=0 PASS atol=1e-11 rtol=1e-10
+MATLAB case=cubic method=1 PASS atol=1e-11 rtol=1e-10
+MATLAB case=huge_x_constant method=0 PASS atol=1e-12 rtol=1e-12
+MATLAB case=huge_x_constant method=1 PASS atol=1e-12 rtol=1e-12
+MATLAB case=huge_y_constant method=0 PASS atol=0 rtol=1e-12
+MATLAB case=huge_y_constant method=1 PASS atol=0 rtol=1e-12
+MATLAB case=large_offset method=0 PASS atol=0.001 rtol=1e-09
+MATLAB case=large_offset method=1 PASS atol=0.001 rtol=1e-09
+MATLAB case=noisy_linear method=0 PASS atol=1e-11 rtol=1e-10
+MATLAB case=noisy_linear method=1 PASS atol=1e-11 rtol=1e-10
+MATLAB case=opposite_extremes method=0 PASS atol=1e-12 rtol=1e-12
+MATLAB case=opposite_extremes method=1 PASS atol=1e-12 rtol=1e-12
+MATLAB case=quadratic method=0 PASS atol=1e-11 rtol=1e-10
+MATLAB case=quadratic method=1 PASS atol=1e-11 rtol=1e-10
+MATLAB case=tiny_identity method=0 PASS atol=9.99989e-321 rtol=1e-10
+MATLAB case=tiny_identity method=1 PASS atol=9.99989e-321 rtol=1e-10
+MATLAB COMPARISON PASSED: 9 cases x 2 component algorithms

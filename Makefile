@@ -1,15 +1,19 @@
 CC = clang
+PYTHON ?= python3
 CFLAGS ?= -std=c89 -Wall -Wextra -fno-stack-protector -DECO_APPLE
 INC = -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles
-BUILD = BuildFiles/Host
+BUILD ?= BuildFiles/Host
 TARGET = $(BUILD)/EcoLab1GeneratedUnitTest
-SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c
+SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c
+HEADERS = $(wildcard HeaderFiles/*.h SharedFiles/*.h UnitTestFiles/SourceFiles/*.h DependenciesFiles/*/SharedFiles/*.h)
 
-.PHONY: all test strict check-no-libc sanitize check reference matrix
+.PHONY: all test strict check-no-libc sanitize check reference matlab-reference matrix verify FORCE
 all: $(TARGET)
 
-$(TARGET): $(SOURCES)
-	mkdir -p $(BUILD)
+# These tiny console clients are always rebuilt. This also covers changed
+# flags/Framework paths and sub-second edits with macOS' legacy GNU make.
+$(TARGET): $(SOURCES) $(HEADERS) Makefile FORCE
+	@mkdir -p "$(BUILD)"
 	$(CC) $(CFLAGS) $(INC) $(SOURCES) -o $@
 
 test: $(TARGET)
@@ -22,27 +26,40 @@ check-no-libc:
 	DesignFiles/Report/check_no_libc.sh
 
 sanitize:
-	DesignFiles/Report/check_sanitizers.sh
+	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" DesignFiles/Report/check_sanitizers.sh
 
-check: test strict check-no-libc sanitize
+# Host and compile checks; real Eco integration is also run by sanitize.
+check: test strict check-no-libc sanitize validation-tools
 
-reference:
-	python3 DesignFiles/Reference/reference_polyfit.py
-	python3 DesignFiles/Reference/reference_scipy.py
+reference: validation-tools
+	$(PYTHON) DesignFiles/Reference/compare_scipy.py
+
+matlab-reference:
+	$(PYTHON) DesignFiles/Reference/compare_matlab.py
 
 matrix:
 	DesignFiles/Report/build_matrix.sh
 
-ECO_FRAMEWORK ?= $(CURDIR)/DependenciesFiles
+ECO_FRAMEWORK ?= $(HOME)/Downloads/Eco.Framework
 ECO_INC = $(INC) -I$(ECO_FRAMEWORK)/Eco.FileSystemManagement1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.MemoryManager1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.InterfaceBus1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.System1/SharedFiles
 ECO_LIBRARIES = $(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a $(ECO_FRAMEWORK)/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a $(ECO_FRAMEWORK)/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a $(ECO_FRAMEWORK)/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a
 ECO_SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c
+ECO_HEADERS = $(wildcard $(ECO_FRAMEWORK)/*/SharedFiles/*.h)
 .PHONY: eco-build eco-test
 eco-build: $(BUILD)/EcoLab1EcoTest
 eco-test: eco-build
 	./$(BUILD)/EcoLab1EcoTest
-	@echo "ECO TESTS PASSED: Lab1, Lab2 and A-E calculator graph"
-$(BUILD)/EcoLab1EcoTest: $(ECO_SOURCES) $(wildcard HeaderFiles/*.h)
-	@mkdir -p $(BUILD)
-	@test -f "$(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a" || (echo "ECO_FRAMEWORK is missing Mac/arm64 Eco libraries"; exit 2)
+	@echo "ECO TESTS PASSED: real Interface Bus, Lab1/Lab2/A-E and failure paths"
+$(BUILD)/EcoLab1EcoTest: $(ECO_SOURCES) $(HEADERS) $(ECO_HEADERS) $(ECO_LIBRARIES) Makefile FORCE
+	@mkdir -p "$(BUILD)"
 	$(CC) $(CFLAGS) -DECO_AARCH64 -DECO_LIB $(ECO_INC) $(ECO_SOURCES) $(ECO_LIBRARIES) -o $@
+
+verify: check eco-test reference matlab-reference validation-build
+
+.PHONY: validation-tools
+validation-tools:
+	$(PYTHON) DesignFiles/Reference/test_reference_validation.py
+
+.PHONY: validation-build
+validation-build:
+	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" $(PYTHON) DesignFiles/Reference/test_build_validation.py

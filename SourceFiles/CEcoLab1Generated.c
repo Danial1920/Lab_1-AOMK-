@@ -30,6 +30,46 @@ static long double root_value(long double x) {
     return estimate;
 }
 
+/* Binary scaling avoids constructing 1/x_scale or x_scale^degree.
+ * The final coefficient can be representable even when those intermediates
+ * overflow (for example y=x with subnormal x). No runtime math API is used. */
+static long double binary_fraction(long double value, int32_t* exponent) {
+    *exponent = 0;
+    while (value >= 1.0L) { value *= 0.5L; ++*exponent; }
+    while (value < 0.5L) { value *= 2.0L; --*exponent; }
+    return value;
+}
+
+static int16_t restore_coefficient(long double coefficient,
+    long double y_scale, long double x_scale, uint32_t power,
+    long double* out) {
+    long double value, xm, ym, next;
+    int32_t exponent, xe, ye;
+    uint32_t i;
+    int negative;
+    *out = 0.0L;
+    if (coefficient == 0.0L) return ERR_ECO_SUCCESS;
+    if (coefficient - coefficient != 0.0L) return ERR__POLYFIT_NONFINITE;
+    negative = coefficient < 0.0L;
+    value = binary_fraction(magnitude(coefficient), &exponent);
+    xm = binary_fraction(x_scale, &xe);
+    ym = binary_fraction(y_scale, &ye);
+    value *= ym; exponent += ye;
+    for (i = 0u; i < power; ++i) {
+        value /= xm; exponent -= xe;
+        while (value >= 1.0L) { value *= 0.5L; ++exponent; }
+        while (value < 0.5L) { value *= 2.0L; --exponent; }
+    }
+    while (exponent > 0) {
+        next = value * 2.0L;
+        if (next - next != 0.0L) return ERR__POLYFIT_NONFINITE;
+        value = next; --exponent;
+    }
+    while (exponent < 0 && value != 0.0L) { value *= 0.5L; ++exponent; }
+    *out = negative ? -value : value;
+    return ERR_ECO_SUCCESS;
+}
+
 /* Solve one fit in O(n * d^2 + d^3) time and O(d^2) allocator memory. */
 static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
     void* context, uint32_t count, uint32_t degree, long double* out,
@@ -40,8 +80,12 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
     long double* result;
     long double* converted;
     long double scale;
+    long double x_scale;
+    long double y_scale;
+    long double y_origin, y_min, y_max, y_span;
     long double center;
-    long double sum;
+    long double x_min, x_max, span, origin;
+    int raw_centering;
     long double a_scale;
     long double b_shift;
     long double xv, yv, z, m, av, bv, c, s, h, old, t, f, v;
@@ -64,30 +108,62 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
     converted = result + MAX_ORDER + 1u;
     order = degree + 1u;
     scale = 0;
-    sum = 0;
+    center = 0;
+    x_scale = 0;
+    y_scale = 0;
+    x_min = 0; x_max = 0; origin = 0;
+    y_min = 0; y_max = 0; y_origin = 0;
+    raw_centering = 0;
     status = ERR_ECO_SUCCESS;
     for (n = 0; n < count; ++n) {
         xv = read(context, n, 0); yv = read(context, n, 1);
         if (xv - xv != 0 || yv - yv != 0) {
             status = ERR__POLYFIT_NONFINITE; goto cleanup;
         }
-        sum += xv;
+        if (n == 0u || xv < x_min) x_min = xv;
+        if (n == 0u || xv > x_max) x_max = xv;
+        if (n == 0u || yv < y_min) y_min = yv;
+        if (n == 0u || yv > y_max) y_max = yv;
+        if (magnitude(xv) > x_scale) x_scale = magnitude(xv);
+        if (magnitude(yv) > y_scale) y_scale = magnitude(yv);
     }
-    center = sum / (long double)count;
-    if (center - center != 0) {
-        status = ERR__POLYFIT_NONFINITE; goto cleanup;
+    if (x_scale == 0.0L) x_scale = 1.0L;
+    if (y_scale == 0.0L) y_scale = 1.0L;
+    y_span = y_max - y_min;
+    if (y_span - y_span == 0.0L) {
+        y_origin = y_min + y_span * 0.5L;
+        y_scale = y_span > 0.0L ? y_span * 0.5L : 1.0L;
+        if (y_scale == 0.0L) y_scale = y_span;
+    }
+    /* Use an exactly representable local difference where possible. Dividing
+     * two close, large x values before subtraction would erase precision. */
+    span = x_max - x_min;
+    if (degree == 0u) {
+        raw_centering = 1; x_scale = 1.0L; origin = 0.0L;
+        a_scale = 1.0L; b_shift = 0.0L;
+    }
+    else if (span - span == 0.0L) {
+        raw_centering = 1;
+        origin = x_min + span * 0.5L;
+        if (span > 0.0L) {
+            x_scale = span * 0.5L;
+            if (x_scale == 0.0L) x_scale = span;
+        }
+        a_scale = 1.0L; b_shift = -origin / x_scale;
+    }
+    else {
+        /* Opposite extreme signs can overflow max-min. The normalized
+         * endpoints remain bounded and their midpoint is safe. */
+        center = (x_min / x_scale + x_max / x_scale) * 0.5L;
+        scale = (x_max / x_scale - x_min / x_scale) * 0.5L;
+        if (scale == 0.0L) scale = 1.0L;
+        a_scale = 1.0L / scale; b_shift = -center / scale;
     }
     for (n = 0; n < count; ++n) {
-        xv = read(context, n, 0) - center;
-        m = magnitude(xv);
-        if (m > scale) scale = m;
-    }
-    if (scale == 0) scale = 1;
-    a_scale = 1 / scale;
-    b_shift = -center * a_scale;
-    for (n = 0; n < count; ++n) {
-        z = read(context, n, 0) * a_scale + b_shift;
-        row[order] = read(context, n, 1);
+        if (degree == 0u) z = 0.0L;
+        else if (raw_centering) z = (read(context, n, 0) - origin) / x_scale;
+        else z = (read(context, n, 0) / x_scale - center) / scale;
+        row[order] = (read(context, n, 1) - y_origin) / y_scale;
         row[degree] = 1;
         for (i = degree; i > 0; --i) row[i - 1u] = row[i] * z;
         if (method == 0u) {
@@ -153,12 +229,14 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
         }
         converted[old_degree] += result[i];
     }
+    /* Restore the removed y offset only in the constant coefficient. */
+    converted[degree] += y_origin / y_scale;
     for (i = 0; i < order; ++i) {
-        if (converted[i] - converted[i] != 0) {
-            status = ERR__POLYFIT_NONFINITE; goto cleanup;
-        }
+        status = restore_coefficient(converted[i], y_scale, x_scale,
+            degree - i, &result[i]);
+        if (status != ERR_ECO_SUCCESS) goto cleanup;
     }
-    memory->pVTbl->Copy(memory, out, converted, (uint32_t)(sizeof(long double) * order));
+    memory->pVTbl->Copy(memory, out, result, (uint32_t)(sizeof(long double) * order));
 cleanup:
     memory->pVTbl->Free(memory, block);
     return status;

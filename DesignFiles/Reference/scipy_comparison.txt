@@ -1,5 +1,38 @@
-degree=2 max_abs_error=4.4408920985006262e-16
-degree=3 max_abs_error=6.8278716014447127e-15
-degree=2 max_abs_error=4.4408920985006262e-16
-degree=3 max_abs_error=8.8817841970012523e-16
-component_vs_scipy max_abs_error=6.8278716014447127e-15
+SciPy 1.15.3 scipy.linalg.lstsq; NumPy 2.1.3 numpy.linalg.lstsq
+SciPy case=constant method=0 PASS atol=1e-12 rtol=1e-12
+SciPy case=constant method=1 PASS atol=1e-12 rtol=1e-12
+SciPy case=cubic method=0 PASS atol=1e-11 rtol=1e-10
+SciPy case=cubic method=1 PASS atol=1e-11 rtol=1e-10
+SciPy case=huge_x_constant method=0 PASS atol=1e-12 rtol=1e-12
+SciPy case=huge_x_constant method=1 PASS atol=1e-12 rtol=1e-12
+SciPy case=huge_y_constant method=0 PASS atol=0.0 rtol=1e-12
+SciPy case=huge_y_constant method=1 PASS atol=0.0 rtol=1e-12
+SciPy case=large_offset method=0 PASS atol=0.001 rtol=1e-09
+SciPy case=large_offset method=1 PASS atol=0.001 rtol=1e-09
+SciPy case=noisy_linear method=0 PASS atol=1e-11 rtol=1e-10
+SciPy case=noisy_linear method=1 PASS atol=1e-11 rtol=1e-10
+SciPy case=opposite_extremes method=0 PASS atol=[1e-12, 1e+294] rtol=1e-12
+SciPy case=opposite_extremes method=1 PASS atol=[1e-12, 1e+294] rtol=1e-12
+SciPy case=quadratic method=0 PASS atol=1e-11 rtol=1e-10
+SciPy case=quadratic method=1 PASS atol=1e-11 rtol=1e-10
+SciPy case=tiny_identity method=0 PASS atol=1e-320 rtol=1e-10
+SciPy case=tiny_identity method=1 PASS atol=1e-320 rtol=1e-10
+NumPy case=constant method=0 PASS atol=1e-12 rtol=1e-12
+NumPy case=constant method=1 PASS atol=1e-12 rtol=1e-12
+NumPy case=cubic method=0 PASS atol=1e-11 rtol=1e-10
+NumPy case=cubic method=1 PASS atol=1e-11 rtol=1e-10
+NumPy case=huge_x_constant method=0 PASS atol=1e-12 rtol=1e-12
+NumPy case=huge_x_constant method=1 PASS atol=1e-12 rtol=1e-12
+NumPy case=huge_y_constant method=0 PASS atol=0.0 rtol=1e-12
+NumPy case=huge_y_constant method=1 PASS atol=0.0 rtol=1e-12
+NumPy case=large_offset method=0 PASS atol=0.001 rtol=1e-09
+NumPy case=large_offset method=1 PASS atol=0.001 rtol=1e-09
+NumPy case=noisy_linear method=0 PASS atol=1e-11 rtol=1e-10
+NumPy case=noisy_linear method=1 PASS atol=1e-11 rtol=1e-10
+NumPy case=opposite_extremes method=0 PASS atol=[1e-12, 1e+294] rtol=1e-12
+NumPy case=opposite_extremes method=1 PASS atol=[1e-12, 1e+294] rtol=1e-12
+NumPy case=quadratic method=0 PASS atol=1e-11 rtol=1e-10
+NumPy case=quadratic method=1 PASS atol=1e-11 rtol=1e-10
+NumPy case=tiny_identity method=0 PASS atol=1e-320 rtol=1e-10
+NumPy case=tiny_identity method=1 PASS atol=1e-320 rtol=1e-10
+REFERENCE COMPARISON PASSED: freshly built component; 9 cases x 2 algorithms x 2 references

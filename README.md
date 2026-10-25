@@ -1,137 +1,123 @@
-# EcoPolynomialMath (Лаб.работа №1, задание 44)
+# Eco Lab1 и Lab2 по ACOM
 
-Лабораторная работа №1 по АОМК, задание 44: вычисление коэффициентов полинома методом наименьших квадратов (`polyfit`). Компонент написан на ANSI C89 для Eco Framework и публикует интерфейс `IEcoPolynomialMath`.
+Проект на ANSI C89 для Eco Framework. Lab1 выполняет задание 44 (`polyfit`): нормальные уравнения с методом Гаусса и потоковый QR/Givens доступны через разные CID. Lab2 добавляет калькуляторные интерфейсы и демонстрирует включение и агрегирование компонентов A–E и Eco.Lab1.
 
-## Лабораторная работа №2
+## Архитектура Lab2
 
-В основной ветке `main` поверх Lab1 добавлен ACOM-граф калькуляторных компонентов: `IEcoCalculatorX` (сложение и вычитание), `IEcoCalculatorY` (умножение, деление и `TryDivision`), корневые интерфейсы `IEcoLab1` и `IEcoLab2`, отдельные CID A–E, включение A/D, агрегирование B/E и внешнее агрегирование `Eco.Lab1` компонентом `Eco.Lab2`. Поведение polyfit и его UnitTest сохранены.
+Все дочерние объекты создаются через настоящий `IEcoInterfaceBus1::QueryComponent`. Калькуляторные фасады вызывают методы дочерних интерфейсов.
 
-## Реализация
+```text
+Eco.Lab2
+├── агрегирует Eco.Lab1 через внутренний неделегирующий IEcoUnknown
+│   └── включает C
+│       ├── включает A: Addition
+│       └── включает D: Subtraction, Multiplication, Division
+│           └── включает B: Addition, Subtraction
+└── включает E: фасад CalculatorY
+    └── агрегирует B: CalculatorX
+```
 
-Проект содержит две независимые реализации, которые регистрируются через `IEcoInterfaceBus1` под разными CID:
+| Компонент | Интерфейсы | Реальное взаимодействие |
+|---|---|---|
+| A | X | Непосредственно выполняет сложение/вычитание |
+| B | X | Поддерживает самостоятельное создание и агрегацию |
+| C | X/Y | Включает A и D; сложение вызывает A, вычитание и Y вызывает D |
+| D | X/Y | Включает B и делегирует ему X; самостоятельно выполняет Y |
+| E | X/Y | Агрегирует B через внутренний unknown; Y реализует самостоятельно |
+| Eco.Lab1 | Lab1, PolynomialMath, X/Y | Сохраняет polyfit, включает C, поддерживает внешнюю агрегацию |
+| Eco.Lab2 | Lab2, Lab1, PolynomialMath, X/Y | Агрегирует Lab1, включает E; внешний Y вызывает E |
 
-- `CID_EcoPolynomialMath` — нормальные уравнения и метод Гаусса с выбором главного элемента;
-- `CID_EcoPolynomialMathQR` — потоковый QR/Givens без накопления исходной выборки.
+При агрегировании фабрика принимает `outer` только с `IID_IEcoUnknown` и возвращает приватный неделегирующий интерфейс. Владелец освобождает его через `Release`. Публичные `QueryInterface/AddRef/Release` делегируют controlling unknown; запросы между всеми поддерживаемыми интерфейсами сохраняют единую identity. Для включения сохраняется отдельная identity дочернего объекта.
 
-Обе реализации поддерживают `double`, `float`, `long double`, `int` и `long`, операции `Add`/`Subtract`, представление входов через `EcoVectorView` и объект результата `IEcoPolynomial`. Коэффициенты возвращаются от старшей степени к свободному члену. Перед решением данные центрируются и масштабируются, после чего коэффициенты переводятся обратно в исходную систему координат.
+Учебные D/E из [InsideACOM](https://github.com/peerf-eco/Eco.Education/tree/main/Eco.Pro.Training/001.InsideACOM) использованы как архитектурный ориентир. Здесь согласованный API использует `double` и новые IID, поэтому он не подменяет бинарно совместимые целочисленные интерфейсы уроков. `TryDivision` возвращает статус и обнуляет результат при делении на ноль. Учебный `Division` возвращает числовой результат; для диагностики ошибки используется `TryDivision`.
 
-Исходники компонента не используют libc и `math.h`. Память выделяется через `IEcoMemoryAllocator1`; копирование и заполнение выполняются через `Copy` и `Fill`.
+## Интерфейсы и идентификаторы
 
-## Проверка
+`IEcoCalculatorX` предоставляет `Addition/Subtraction`, `IEcoCalculatorY` — `Multiplication/Division/TryDivision`. Контракты находятся в `SharedFiles/*.h` и `SharedFiles/EcoLab2.idl`.
+
+| Назначение | IID/CID |
+|---|---|
+| IID CalculatorX / CalculatorY | `D3B3E2F1-8D21-4A6B-9A40-440000000050` / `...0051` |
+| IID Lab1 / Lab2 | `D3B3E2F1-8D21-4A6B-9A40-440000000052` / `...0053` |
+| CID Lab1 normal / QR | `D3B3E2F1-8D21-4A6B-9A40-440000000045` / `...0046` |
+| CID A / B / C / D / E / Lab2 | `D3B3E2F1-8D21-4A6B-9A40-440000000060` / `...0061` / `...0062` / `...0063` / `...0064` / `...0065` |
+
+## Подготовка macOS arm64
+
+Установите Xcode и распакуйте официальный архив преподавателя `Eco.Framework_20260918.zip`. Исходники Framework менять не требуется.
 
 ```sh
 cd "/Users/danial2006/Documents/ChatGPT/Лабораторная работа №1"
-
-make test
-make ECO_FRAMEWORK=/path/to/Eco.Framework eco-test
-make check
-```
-
-`make test` собирает Host UnitTest в C89 и выполняет 72 проверки с выводом `Проверок: N, ошибок: K`. `eco-test` собирает консольный Eco-клиент, получает Lab1, Lab2 и A–E через шину, выполняет 108 проверок и возвращает ненулевой код при любой ошибке.
-
-Eco UnitTest использует реальные factory и `IEcoInterfaceBus1`; тестовый allocator применяется только в Host UnitTest для проверки контракта памяти.
-
-Полный локальный контроль выполняется командой `make check`: Host UnitTest, строгая контрольная C89-компиляция и проверка отсутствия libc. Независимые эталоны запускаются через `make reference`; MATLAB-скрипт находится в `DesignFiles/Reference/polyfit_reference.m`, а SciPy-проверка выполняется в отдельном окружении. При установленном MATLAB вывод сохраняется в `DesignFiles/Reference/matlab_output.txt`, а сравнение выполняется `python3 DesignFiles/Reference/compare_matlab.py`.
-
-Фактическое сравнение вывода компонента со SciPy 1.18.1 выполнено скриптом `DesignFiles/Reference/compare_scipy.py`: максимальная абсолютная ошибка для квадратного и кубического тестов составила `6.83e-15`. MATLAB R2026b также выполнен; статус и вывод сохранены в `DesignFiles/Reference/matlab_status.txt` и `DesignFiles/Reference/matlab_output.txt`.
-
-Платформенная матрица Linux `TARGET=0/1 × DEBUG=0/1` запускается командой `make matrix` после установки официального `ECO_TOOLCHAIN`. Без кросс-компилятора скрипт завершает работу с явным статусом `SKIPPED`; локальная macOS-проверка не выдаётся за Linux-бинарный результат.
-
-Для Xcode откройте оба проекта из `AssemblyFiles/Mac/Xcode_v123/`, задайте `ECO_FRAMEWORK` на распакованный `Eco.Framework_20260918.zip`, соберите компонент в схемах `Static` и `Dynamic` для `Debug` и `Release`, а UnitTest — в `Static/Debug` и `Static/Release`. Команды приведены в `XCODE_SETUP.md`. После динамической сборки запустите `DesignFiles/Report/check_dynamic_deps.sh`.
-
-## Полная сборка через терминал
-
-Сначала укажите путь к распакованному Eco Framework:
-
-```sh
 export ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework"
-cd "/Users/danial2006/Documents/ChatGPT/Лабораторная работа №1"
 ```
 
-Локальные тесты, строгая C89-компиляция, проверка отсутствия libc и sanitizer:
+Для другого расположения задайте свой путь. Компоненты не используют `math.h`, стандартные заголовки C и прямые вызовы libc. Память, копирование и заполнение выполняются через `IEcoMemoryAllocator1`. Стандартный вывод используется только консольными клиентами: официальной `Eco.StdIO.C89` arm64 в предоставленном архиве нет.
+
+## Проверка из терминала
 
 ```sh
-make check
-```
-
-Интеграционный Eco UnitTest через настоящий `IEcoSystem1` и `IEcoInterfaceBus1`:
-
-```sh
+make ECO_FRAMEWORK="$ECO_FRAMEWORK" check
 make ECO_FRAMEWORK="$ECO_FRAMEWORK" eco-test
 ```
 
-Компонент Static Debug:
+Host проверяет численное ядро, контракты и освобождение памяти. Интеграционный клиент получает A–E/Lab1/Lab2 через реальные фабрики и Eco Interface Bus, проверяет матрицы QueryInterface, identity, счётчики ссылок и ошибочные пути. Подмены bus, фабрик или результатов QueryInterface нет. Явно помеченный тестовый allocator используется для подсчёта выделений и детерминированных отказов. `check` также выполняет строгую C89-компиляцию, проверку отсутствия libc и sanitizer для Host и реального Eco-клиента. При ошибке команда завершается ненулевым кодом.
+
+## Xcode Static Debug и Release
+
+Оба проекта находятся в `AssemblyFiles/Mac/Xcode_v123`. В Xcode Settings → Locations → Custom Paths задайте `ECO_FRAMEWORK`. Компонент собирается схемами Static/Dynamic, клиент — Static. ЛР2 собирается теми же проектами с дополнительными исходниками, имя проекта сохранено для совместимости ЛР1.
+
+Последовательно выполните:
 
 ```sh
-xcodebuild \
-  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
-  -scheme Static -configuration Debug \
-  -derivedDataPath BuildFiles/XcodeComponentStaticDebug \
-  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
-  CODE_SIGNING_ALLOWED=NO build
+for configuration in Debug Release; do
+  xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
+    -scheme Static -configuration "$configuration" -jobs 1 \
+    -derivedDataPath "BuildFiles/XcodeComponentStatic$configuration" \
+    ECO_FRAMEWORK="$ECO_FRAMEWORK" CODE_SIGNING_ALLOWED=NO build
+
+  xcodebuild -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
+    -scheme Static -configuration "$configuration" -jobs 1 \
+    -derivedDataPath "BuildFiles/XcodeUnit$configuration" \
+    ECO_FRAMEWORK="$ECO_FRAMEWORK" CODE_SIGNING_ALLOWED=NO build
+done
 ```
 
-Компонент Static Release:
+Сборка сама по себе не запускает UnitTest. С указанным `derivedDataPath` исполняемые файлы находятся в `BuildFiles/XcodeUnitDebug/Build/Products/Debug/Static` и `BuildFiles/XcodeUnitRelease/Build/Products/Release/Static`. Для запуска интеграционных проверок удобнее команда `make ... eco-test` выше. Не запускайте одновременно две сборки с одним `derivedDataPath`: при `database is locked` остановите конкурирующую сборку или используйте новый отдельный каталог.
+
+## Настоящий Dynamic runtime
 
 ```sh
-xcodebuild \
-  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
-  -scheme Static -configuration Release \
-  -derivedDataPath BuildFiles/XcodeComponentStaticRelease \
-  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
-  CODE_SIGNING_ALLOWED=NO build
+ECO_FRAMEWORK="$ECO_FRAMEWORK" CONFIGURATION=Release \
+  DesignFiles/Report/build_dynamic_runtime_macos.sh
+ECO_FRAMEWORK="$ECO_FRAMEWORK" CONFIGURATION=Debug \
+  DesignFiles/Report/build_dynamic_runtime_macos.sh
 ```
 
-Компонент Dynamic Release:
+Скрипт собирает в Xcode **восемь** библиотек с именем из реального 32-значного CID: две реализации Lab1, A–E и Lab2. Файлы размещаются в `BuildFiles/DynamicRuntime/Debug` или `Release`. Выбор экспортируемой фабрики: обычная, `POLYFIT_QR_ONLY`, `ECO_CALCULATOR_KIND=0..4` либо `ECO_LAB2_ONLY`.
+
+Отдельный `DynamicRuntimeTest.c` линкуется только с официальными системными библиотеками. Он получает все восемь компонентов через `QueryComponent`; официальный загрузчик использует `ECO_FRAMEWORK_RT`, без ручной регистрации лабораторных фабрик. `DYLD_PRINT_LIBRARIES` подтверждает фактическую загрузку каждой dylib. Проверяются 44 условия; процесс с пустым runtime обязан завершиться ошибкой. Для каждой библиотеки выполняются `nm -u` и `otool -L`. Логи находятся в `BuildFiles/DynamicRuntimeLogs/<конфигурация>`; Framework за пределами проекта не изменяется.
+
+## Polyfit и независимые эталоны
+
+Lab1 поддерживает `double`, `float`, `long double`, `int`, `long`, `Add/Subtract`, `FitVector` и `IEcoPolynomial`. Коэффициенты возвращаются от старшей степени к свободному члену. Центрирование и масштабирование выполняются перед решением, затем коэффициенты переводятся обратно.
+
+Скрипты и фактические сравнения MATLAB/SciPy находятся в `DesignFiles/Reference`. Компараторы заново собирают компонент и рассчитывают независимые эталоны, проверяя все коэффициенты девяти наборов данных для normal и QR. Для SciPy/NumPy используются заранее заданные допуски и записанный протокол обусловливания входной задачи. Для повторного запуска выберите Python с SciPy/NumPy:
 
 ```sh
-xcodebuild \
-  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1.xcodeproj \
-  -scheme Dynamic -configuration Release \
-  -derivedDataPath BuildFiles/XcodeComponentDynamicRelease \
-  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
-  CODE_SIGNING_ALLOWED=NO build
+make PYTHON=/opt/anaconda3/bin/python reference
+make PYTHON=/opt/anaconda3/bin/python matlab-reference
 ```
 
-UnitTest Static Debug:
+Вместо `/opt/anaconda3/bin/python` можно указать свой Python с установленными SciPy/NumPy. `matlab-reference` запускает установленный `/Applications/MATLAB_R2026b.app/bin/matlab`; иной путь задаётся переменной `MATLAB`. Свежий прогон SciPy 1.15.3/NumPy 2.1.3 проверил 36 массивов коэффициентов, MATLAB R2026b — 18. Валидатор эталонов отдельно прошёл восемь проверок, включая неполные, дублированные, нечисловые и ошибочные результаты. Эти проверки не подменяют ACOM-тесты ЛР2.
 
-```sh
-xcodebuild \
-  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
-  -scheme Static -configuration Debug \
-  -derivedDataPath BuildFiles/XcodeUnitDebug \
-  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
-  CODE_SIGNING_ALLOWED=NO build
-```
+## Платформы и структура
 
-UnitTest Static Release:
+Целевая проверенная платформа — macOS arm64. В Linux/Windows/EcoOS обновлены списки исходников; это не означает, что их бинарная сборка выполнена. `make matrix` требует официальный `ECO_TOOLCHAIN` и явно возвращает `SKIPPED`, если он отсутствует.
 
-```sh
-xcodebuild \
-  -project AssemblyFiles/Mac/Xcode_v123/EcoLab1UnitTest.xcodeproj \
-  -scheme Static -configuration Release \
-  -derivedDataPath BuildFiles/XcodeUnitRelease \
-  -jobs 1 ECO_FRAMEWORK="$ECO_FRAMEWORK" \
-  CODE_SIGNING_ALLOWED=NO build
-```
-
-Не запускайте одновременно сборку одного проекта в Xcode и терминале. Если появляется `database is locked`, остановите текущую сборку и удалите только её производный каталог, например `rm -rf BuildFiles/XcodeUnitDebug`, затем повторите команду.
-
-Для macOS arm64 отдельные Dynamic-артефакты двух реализаций polyfit и внешнего Lab2 factory создаются скриптом `DesignFiles/Report/build_dynamic_runtime_macos.sh`:
-
-```sh
-ECO_FRAMEWORK="$ECO_FRAMEWORK" DesignFiles/Report/build_dynamic_runtime_macos.sh
-```
-
-Обычный файл экспортирует фабрику `CID_EcoPolynomialMath`, QR-файл собирается с `POLYFIT_QR_ONLY` и экспортирует фабрику `CID_EcoPolynomialMathQR`, а Lab2-файл собирается с `ECO_LAB2_ONLY` и экспортирует `GetEcoLab2Factory`. Перед запуском динамического Eco-клиента нужный файл нужно разместить в каталоге runtime, который использует `ECO_FRAMEWORK_RT`.
-
-## Структура
-
-- `SourceFiles` — численное ядро, фабрика и регистрация на шине;
-- `HeaderFiles` и `SharedFiles` — закрытые и публичные интерфейсы, IID/CID и коды ошибок;
-- `UnitTestFiles` — Host UnitTest и консольный Eco-клиент;
-- `AssemblyFiles` — проекты Xcode;
-- `DesignFiles/Report` — отчёт и проверочные материалы;
-- `DesignFiles/Prompt` — системный промпт и протокол его улучшения.
-
-Перегрузки объявляются единым повторно подключаемым шаблоном `HeaderFiles/polyfit_core_template.h`. Проверка запретов libc выполняется скриптами `DesignFiles/Report/check_no_libc.sh` и `DesignFiles/Report/check_dynamic_deps.sh`. Исходники проекта сохранены в UTF-8 with signature и CRLF; shell-скрипты используют LF.
+- `SourceFiles` — ядро, ACOM-компоненты, фабрики и регистрация.
+- `HeaderFiles`, `SharedFiles` — закрытые/публичные интерфейсы, IID/CID, IDL.
+- `UnitTestFiles` — Host, Eco и отдельный Dynamic-клиент.
+- `AssemblyFiles` — проекты Xcode и платформенные сборочные файлы.
+- `DesignFiles/Report/EcoLab2_Report.docx` — отчёт ЛР2; корневая копия идентична.
+- `DesignFiles/Prompt` — системные промпты, вне Word-отчёта.
+- `COMPLIANCE.md`, `DesignFiles/Reference/test_matrix.md` — контроль требований и матрица проверок.
