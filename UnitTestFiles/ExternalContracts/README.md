@@ -1,9 +1,6 @@
 # Независимые учебные контракты
 
-Эти заголовки скопированы без изменения байтов из Zzzpize/EcoLab1,
-commit 57d07171c5c92b492ac3f1fd48b93ce2155dd67c (2026-10-25).
-X взят из Eco.CalculatorA/SharedFiles, Y из Eco.CalculatorC/SharedFiles,
-IdEcoCalculatorA–E из соответствующих каталогов SharedFiles.
+Здесь зафиксированы неизменённые учебные заголовки IEcoCalculatorX/Y и CID A–E для независимой проверки публичных контрактов.
 Сохранены исходные уведомления об авторстве Vladimir Bashev.
 
 Lab2Client компилируется сначала с этими заголовками, а сервер — с SharedFiles.
