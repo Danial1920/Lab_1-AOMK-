@@ -3,24 +3,22 @@ import "IEcoBase1.idl";
 
 [
     object,
-    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000050),
+    uuid(93221116-2248-4742-AE06-82819447843D),
     pointer_default(unique)
 ]
 interface IEcoCalculatorX : IEcoUnknown {
-    double_t Addition([in] double_t a, [in] double_t b);
-    double_t Subtraction([in] double_t a, [in] double_t b);
+    int32_t Addition([in] int16_t a, [in] int16_t b);
+    int16_t Subtraction([in] int16_t a, [in] int16_t b);
 };
 
 [
     object,
-    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000051),
+    uuid(BD6414C2-9096-423E-A90C-04D77AFD1CAD),
     pointer_default(unique)
 ]
 interface IEcoCalculatorY : IEcoUnknown {
-    double_t Multiplication([in] double_t a, [in] double_t b);
-    double_t Division([in] double_t a, [in] double_t b);
-    int16_t TryDivision([in] double_t a, [in] double_t b,
-                        [out] double_t* result);
+    int32_t Multiplication([in] int16_t a, [in] int16_t b);
+    int16_t Division([in] int16_t a, [in] int16_t b);
 };
 
 [
@@ -33,11 +31,22 @@ interface IEcoLab1 : IEcoUnknown {
 
 [
     object,
-    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000053),
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000055),
     pointer_default(unique)
 ]
 interface IEcoLab2 : IEcoUnknown {
+    int16_t Horner([in] const int16_t* coefficients, [in] uint32_t count,
+                   [in] int16_t x, [out] int32_t* result);
 };
 
-/* CID declarations are in IdEcoLab2.h. New double-valued calculator IIDs
- * intentionally differ from the integer-valued InsideACOM interfaces. */
+[
+    object,
+    uuid(D3B3E2F1-8D21-4A6B-9A40-440000000054),
+    pointer_default(unique)
+]
+interface IEcoCalculatorSafe : IEcoUnknown {
+    int16_t TryDivision([in] int16_t a, [in] int16_t b, [out] int16_t* result);
+};
+
+/* A/C share the educational CID; select one implementation per process.
+ * Lab2 uses a new IID for the added Horner contract; its CID is unchanged. */

@@ -14,12 +14,12 @@ for source in CEcoLab1Generated.c CEcoLab1GeneratedFactory.c CalculatorComponent
     "-I$ROOT/HeaderFiles" "-I$ROOT/SharedFiles" \
     -c "$ROOT/SourceFiles/$source" -o "$OUT/${source%.c}.o"
 done
-for source in HostTests.c EcoLab1Generated.c; do
+for source in HostTests.c EcoLab1Generated.c Lab2Client.c DynamicRuntimeTest.c; do
   $CC $COMMON -Wno-c11-extensions -DECO_APPLE -DECO_AARCH64 -DECO_LIB \
     "-I$ROOT/DependenciesFiles/Eco.Core1/SharedFiles" \
     "-I$ROOT/DependenciesFiles/Eco.InterfaceBus1/SharedFiles" \
     "-I$ROOT/DependenciesFiles/Eco.MemoryManager1/SharedFiles" \
-    "-I$ROOT/HeaderFiles" "-I$ROOT/SharedFiles" \
+    "-I$ROOT/UnitTestFiles/ExternalContracts" "-I$ROOT/HeaderFiles" "-I$ROOT/SharedFiles" \
     -c "$ROOT/UnitTestFiles/SourceFiles/$source" -o "$OUT/${source%.c}.o"
 done
-printf '%s\n' "STRICT C89 CHECK PASSED: component and both test clients"
+printf '%s\n' "STRICT C89 CHECK PASSED: component and four test clients"

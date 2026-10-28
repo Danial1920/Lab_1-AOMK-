@@ -2,6 +2,12 @@ CC = clang
 PYTHON ?= python3
 CFLAGS ?= -std=c89 -Wall -Wextra -fno-stack-protector -DECO_APPLE
 INC = -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles
+CALCULATOR_VARIANT ?= A
+ifeq ($(CALCULATOR_VARIANT),C)
+VARIANT_FLAGS = -DECO_REPLACE_A_WITH_C
+else ifneq ($(CALCULATOR_VARIANT),A)
+$(error CALCULATOR_VARIANT must be A or C)
+endif
 BUILD ?= BuildFiles/Host
 TARGET = $(BUILD)/EcoLab1GeneratedUnitTest
 SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c
@@ -14,7 +20,7 @@ all: $(TARGET)
 # flags/Framework paths and sub-second edits with macOS' legacy GNU make.
 $(TARGET): $(SOURCES) $(HEADERS) Makefile FORCE
 	@mkdir -p "$(BUILD)"
-	$(CC) $(CFLAGS) $(INC) $(SOURCES) -o "$@"
+	$(CC) $(CFLAGS) $(VARIANT_FLAGS) $(INC) $(SOURCES) -o "$@"
 
 test: $(TARGET)
 	"$(TARGET)"
@@ -29,7 +35,7 @@ sanitize:
 	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" DesignFiles/Report/check_sanitizers.sh
 
 # Host and compile checks; real Eco integration is also run by sanitize.
-check: test strict check-no-libc sanitize validation-tools
+check: test strict check-no-libc sanitize validation-tools component-clients
 
 reference: validation-tools
 	$(PYTHON) DesignFiles/Reference/compare_scipy.py
@@ -52,9 +58,9 @@ eco-test: eco-build
 	@echo "ECO TESTS PASSED: real Interface Bus, Lab1/Lab2/A-E and failure paths"
 $(BUILD)/EcoLab1EcoTest: $(ECO_SOURCES) $(HEADERS) $(ECO_HEADERS) $(ECO_LIBRARIES) Makefile FORCE
 	@mkdir -p "$(BUILD)"
-	$(CC) $(CFLAGS) -DECO_AARCH64 -DECO_LIB $(ECO_INC) $(ECO_SOURCES) $(ECO_LIBRARIES) -o "$@"
+	$(CC) $(CFLAGS) $(VARIANT_FLAGS) -DECO_AARCH64 -DECO_LIB $(ECO_INC) $(ECO_SOURCES) $(ECO_LIBRARIES) -o "$@"
 
-verify: check eco-test reference matlab-reference validation-build
+verify: check eco-test-variants reference matlab-reference validation-build
 
 .PHONY: validation-tools
 validation-tools:
@@ -63,3 +69,12 @@ validation-tools:
 .PHONY: validation-build
 validation-build:
 	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" $(PYTHON) DesignFiles/Reference/test_build_validation.py
+
+.PHONY: eco-test-variants
+eco-test-variants:
+	$(MAKE) CALCULATOR_VARIANT=A BUILD=BuildFiles/VariantA ECO_FRAMEWORK="$(ECO_FRAMEWORK)" eco-test
+	$(MAKE) CALCULATOR_VARIANT=C BUILD=BuildFiles/VariantC ECO_FRAMEWORK="$(ECO_FRAMEWORK)" eco-test
+
+.PHONY: component-clients
+component-clients:
+	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" $(PYTHON) DesignFiles/Report/build_component_clients.py

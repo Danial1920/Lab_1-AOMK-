@@ -1,4 +1,9 @@
-﻿/*
+/* Separate archives must export only their own factory/constructor names. */
+#if defined(POLYFIT_SEPARATE_FACTORY) && defined(POLYFIT_QR_ONLY)
+#define PolyfitComponent_Create_00000045 PolyfitQRComponent_Create_00000046
+#define PolyfitComponent_InnerUnknown_00000045 PolyfitQRComponent_InnerUnknown_00000046
+#endif
+/*
  * Кодировка: UTF-8 with signature (Codepage 65001).
  * Назначение: исходный файл компонента лабораторной работы №1, задание 44.
  * Описание: ACOM/Eco-компонент полиномиальной аппроксимации.
@@ -160,8 +165,8 @@ static uint32_t ECOCALLMETHOD component_inner_release(IEcoUnknown* me) {
     references = --component->references;
     if (references == 0u) {
         memory = component->m_pIMem;
-        if (component->included_x != 0)
-            component->included_x->pVTbl->Release(component->included_x);
+        if (component->aggregated_b != 0)
+            component->aggregated_b->pVTbl->Release(component->aggregated_b);
         if (component->included_y != 0)
             component->included_y->pVTbl->Release(component->included_y);
 #if defined(ECO_LIB) || defined(ECO_DLL)
@@ -204,11 +209,15 @@ static int16_t ECOCALLMETHOD component_inner_qi(IEcoUnknown* me,
         return ERR_ECO_SUCCESS;
     }
     if (guid_equal(riid, &IID_IEcoCalculatorX)) {
-        component_add_ref(&component->math); *ppv = &component->calculator_x.iface;
-        return ERR_ECO_SUCCESS;
+        if (component->aggregated_b == 0) return ERR_ECO_NOINTERFACE;
+        return component->aggregated_b->pVTbl->QueryInterface(component->aggregated_b, riid, ppv);
     }
     if (guid_equal(riid, &IID_IEcoCalculatorY)) {
         component_add_ref(&component->math); *ppv = &component->calculator_y.iface;
+        return ERR_ECO_SUCCESS;
+    }
+    if (guid_equal(riid, &IID_IEcoCalculatorSafe)) {
+        component_add_ref(&component->math); *ppv = &component->calculator_safe.iface;
         return ERR_ECO_SUCCESS;
     }
     return ERR_ECO_NOINTERFACE;
@@ -225,27 +234,12 @@ static int16_t ECOCALLMETHOD component_qi(IEcoPolynomialMathPtr me,
     controller = component_controller((CPolynomialMath*)me);
     return controller->pVTbl->QueryInterface(controller, riid, ppv);
 }
-static int16_t ECOCALLMETHOD lab1_calc_x_qi(IEcoCalculatorXPtr me,
-    const UGUID* riid, voidptr_t* ppv) {
-    if (ppv == 0) return ERR_ECO_POINTER;
-    *ppv = 0;
-    if (me == 0 || riid == 0) return ERR_ECO_POINTER;
-    return component_qi(&((CPolynomialXView*)me)->owner->math, riid, ppv);
-}
 static int16_t ECOCALLMETHOD lab1_calc_y_qi(IEcoCalculatorYPtr me,
     const UGUID* riid, voidptr_t* ppv) {
     if (ppv == 0) return ERR_ECO_POINTER;
     *ppv = 0;
     if (me == 0 || riid == 0) return ERR_ECO_POINTER;
     return component_qi(&((CPolynomialYView*)me)->owner->math, riid, ppv);
-}
-static uint32_t ECOCALLMETHOD lab1_calc_x_add_ref(IEcoCalculatorXPtr me) {
-    if (me == 0) return 0u;
-    return component_add_ref(&((CPolynomialXView*)me)->owner->math);
-}
-static uint32_t ECOCALLMETHOD lab1_calc_x_release(IEcoCalculatorXPtr me) {
-    if (me == 0) return 0u;
-    return component_release(&((CPolynomialXView*)me)->owner->math);
 }
 static uint32_t ECOCALLMETHOD lab1_calc_y_add_ref(IEcoCalculatorYPtr me) {
     if (me == 0) return 0u;
@@ -255,46 +249,51 @@ static uint32_t ECOCALLMETHOD lab1_calc_y_release(IEcoCalculatorYPtr me) {
     if (me == 0) return 0u;
     return component_release(&((CPolynomialYView*)me)->owner->math);
 }
-static double ECOCALLMETHOD lab1_add(IEcoCalculatorXPtr me, double a, double b) {
-    IEcoCalculatorX* child;
-    if (me == 0) return 0.0;
-    child = ((CPolynomialXView*)me)->owner->included_x;
-    return child->pVTbl->Addition(child, a, b);
-}
-static double ECOCALLMETHOD lab1_subtract(IEcoCalculatorXPtr me, double a, double b) {
-    IEcoCalculatorX* child;
-    if (me == 0) return 0.0;
-    child = ((CPolynomialXView*)me)->owner->included_x;
-    return child->pVTbl->Subtraction(child, a, b);
-}
-static double ECOCALLMETHOD lab1_multiply(IEcoCalculatorYPtr me, double a, double b) {
+static int32_t ECOCALLMETHOD lab1_multiply(IEcoCalculatorYPtr me, int16_t a, int16_t b) {
     IEcoCalculatorY* child;
-    if (me == 0) return 0.0;
+    if (me == 0) return 0;
     child = ((CPolynomialYView*)me)->owner->included_y;
     return child->pVTbl->Multiplication(child, a, b);
 }
-static double ECOCALLMETHOD lab1_divide(IEcoCalculatorYPtr me, double a, double b) {
+static int16_t ECOCALLMETHOD lab1_divide(IEcoCalculatorYPtr me, int16_t a, int16_t b) {
     IEcoCalculatorY* child;
-    if (me == 0) return 0.0;
+    if (me == 0 || b == 0 || (a == -32768L && b == -1)) return 0;
     child = ((CPolynomialYView*)me)->owner->included_y;
     return child->pVTbl->Division(child, a, b);
 }
-static int16_t ECOCALLMETHOD lab1_try_divide(IEcoCalculatorYPtr me,
-    double a, double b, double* result) {
+static int16_t ECOCALLMETHOD lab1_safe_qi(IEcoCalculatorSafe* me,
+    const UGUID* riid, voidptr_t* ppv) {
+    if (ppv == 0) return ERR_ECO_POINTER;
+    *ppv = 0;
+    if (me == 0 || riid == 0) return ERR_ECO_POINTER;
+    return component_qi(&((CPolynomialSafeView*)me)->owner->math, riid, ppv);
+}
+static uint32_t ECOCALLMETHOD lab1_safe_add_ref(IEcoCalculatorSafe* me) {
+    if (me == 0) return 0u;
+    return component_add_ref(&((CPolynomialSafeView*)me)->owner->math);
+}
+static uint32_t ECOCALLMETHOD lab1_safe_release(IEcoCalculatorSafe* me) {
+    if (me == 0) return 0u;
+    return component_release(&((CPolynomialSafeView*)me)->owner->math);
+}
+static int16_t ECOCALLMETHOD lab1_try_divide(IEcoCalculatorSafe* me,
+    int16_t a, int16_t b, int16_t* result) {
     IEcoCalculatorY* child;
     if (result == 0) return ERR_ECO_POINTER;
-    *result = 0.0;
+    *result = 0;
     if (me == 0) return ERR_ECO_POINTER;
-    child = ((CPolynomialYView*)me)->owner->included_y;
-    return child->pVTbl->TryDivision(child, a, b, result);
+    if (b == 0) return ERR_ECO_CALCULATOR_ZERO;
+    if (a == -32768L && b == -1) return ERR_ECO_CALCULATOR_OVERFLOW;
+    child = ((CPolynomialSafeView*)me)->owner->included_y;
+    *result = child->pVTbl->Division(child, a, b);
+    return ERR_ECO_SUCCESS;
 }
-static IEcoCalculatorXVTbl lab1_x_vtbl = {
-    lab1_calc_x_qi, lab1_calc_x_add_ref, lab1_calc_x_release,
-    lab1_add, lab1_subtract
-};
 static IEcoCalculatorYVTbl lab1_y_vtbl = {
     lab1_calc_y_qi, lab1_calc_y_add_ref, lab1_calc_y_release,
-    lab1_multiply, lab1_divide, lab1_try_divide
+    lab1_multiply, lab1_divide
+};
+static IEcoCalculatorSafeVTbl lab1_safe_vtbl = {
+    lab1_safe_qi, lab1_safe_add_ref, lab1_safe_release, lab1_try_divide
 };
 
 /* Generate one ACOM method for a typed input/output pair. */
@@ -408,12 +407,15 @@ static IEcoPolynomialMathVTbl component_vtbl = {
     component_subtract, component_fit_vector, component_new_polynomial
 };
 
-/* Create the same real C/A/D/B graph with or without a system.  The
+/* Create the same real aggregated B / included E graph with or without a system. The
  * allocator-only path exists for host numerical tests; runtime uses the bus. */
 int16_t PolyfitComponent_Create_00000045(
     IEcoUnknownPtr_t system, IEcoMemoryAllocator1* memory, uint32_t method,
     IEcoUnknownPtr_t outer, IEcoPolynomialMathPtr* component_out) {
-    CPolynomialMath* component; CCalculatorComponent* calculator;
+    CPolynomialMath* component;
+#if !defined(ECO_LIB) && !defined(ECO_DLL)
+    CCalculatorComponent* calculator;
+#endif
     IEcoInterfaceBus1* bus; int16_t status;
     if (component_out == 0) return ERR_ECO_POINTER;
     *component_out = 0;
@@ -424,15 +426,15 @@ int16_t PolyfitComponent_Create_00000045(
     component->math.pVTbl = &component_vtbl;
     component->inner_unknown.iface.pVTbl = &component_inner_vtbl;
     component->inner_unknown.owner = component;
-    component->calculator_x.iface.pVTbl = &lab1_x_vtbl;
+    component->calculator_safe.iface.pVTbl = &lab1_safe_vtbl;
     component->calculator_y.iface.pVTbl = &lab1_y_vtbl;
-    component->calculator_x.owner = component; component->calculator_y.owner = component;
+    component->calculator_safe.owner = component; component->calculator_y.owner = component;
     component->references = 1u; component->method = method;
     component->m_pIMem = memory; component->m_pISys = 0;
     component->m_pIOuter = outer;
-    component->included_x = 0; component->included_y = 0;
+    component->aggregated_b = 0; component->included_y = 0;
     memory->pVTbl->AddRef(memory);
-    bus = 0; calculator = 0; status = ERR_ECO_SUCCESS;
+    bus = 0; status = ERR_ECO_SUCCESS;
 #if defined(ECO_LIB) || defined(ECO_DLL)
     if (system != 0) {
         status = system->pVTbl->QueryInterface(system, &GID_IEcoSystem,
@@ -452,21 +454,37 @@ int16_t PolyfitComponent_Create_00000045(
     (void)system;
 #endif
     if (bus != 0) {
-        status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorC, 0,
-            &IID_IEcoCalculatorX, (voidptr_t*)&component->included_x);
+        status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorB,
+            component_controller(component), &IID_IEcoUnknown,
+            (voidptr_t*)&component->aggregated_b);
+        if (status == ERR_ECO_SUCCESS) {
+            status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorE, 0,
+                &IID_IEcoCalculatorY, (voidptr_t*)&component->included_y);
+            if (status == ERR_ECO_COMPONENT_NOTFOUND || status == ERR_ECO_NOINTERFACE)
+                status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorD, 0,
+                    &IID_IEcoCalculatorY, (voidptr_t*)&component->included_y);
+        }
         bus->pVTbl->Release(bus);
     } else {
-        status = Calculator_Create(memory, CALCULATOR_C, 0, &calculator);
+#if !defined(ECO_LIB) && !defined(ECO_DLL)
+        calculator = 0;
+        status = Calculator_Create(memory, CALCULATOR_B, component_controller(component), &calculator);
+        if (status == ERR_ECO_SUCCESS) {
+            /* Adopt the constructor's private reference, never a public B reference. */
+            component->aggregated_b = &calculator->inner_unknown.iface;
+            calculator = 0;
+            status = Calculator_Create(memory, CALCULATOR_E, 0, &calculator);
+        }
         if (status == ERR_ECO_SUCCESS) {
             status = calculator->inner_unknown.iface.pVTbl->QueryInterface(
-                &calculator->inner_unknown.iface, &IID_IEcoCalculatorX,
-                (voidptr_t*)&component->included_x);
+                &calculator->inner_unknown.iface, &IID_IEcoCalculatorY,
+                (voidptr_t*)&component->included_y);
             calculator->inner_unknown.iface.pVTbl->Release(&calculator->inner_unknown.iface);
         }
+#else
+        status = ERR_ECO_NOSYSTEM;
+#endif
     }
-    if (status == ERR_ECO_SUCCESS)
-        status = component->included_x->pVTbl->QueryInterface(component->included_x,
-            &IID_IEcoCalculatorY, (voidptr_t*)&component->included_y);
     if (status != ERR_ECO_SUCCESS) {
         component_inner_release(&component->inner_unknown.iface);
         return status;
@@ -564,7 +582,7 @@ static char_t* ECOCALLMETHOD factory_name(IEcoComponentFactoryPtr_t me) {
 /* Component function implementation. */
 static char_t* ECOCALLMETHOD factory_version(IEcoComponentFactoryPtr_t me) {
     if (me == 0) return "";
-    return "1.1.0";
+    return "2.0.0";
 }
 
 /* Component function implementation. */
@@ -578,45 +596,36 @@ static IEcoComponentFactoryVTbl factory_vtbl = {
     factory_init, factory_name, factory_version, factory_manufacturer
 };
 
+#if !defined(POLYFIT_SEPARATE_FACTORY) || !defined(POLYFIT_QR_ONLY)
 static CPolynomialFactory normal_factory = {{&factory_vtbl}, 1u, 0u};
+#endif
+#if !defined(POLYFIT_SEPARATE_FACTORY) || defined(POLYFIT_QR_ONLY)
 static CPolynomialFactory qr_factory = {{&factory_vtbl}, 1u, 1u};
+#endif
 
 /* Component function implementation. */
+#if !defined(POLYFIT_SEPARATE_FACTORY) || !defined(POLYFIT_QR_ONLY)
 IEcoComponentFactory* GetPolynomialFactory_00000045(void) {
     return &normal_factory.factory;
 }
+#endif
 
 /* Component function implementation. */
+#if !defined(POLYFIT_SEPARATE_FACTORY) || defined(POLYFIT_QR_ONLY)
 IEcoComponentFactory* GetPolynomialQRFactory_00000046(void) {
     return &qr_factory.factory;
 }
+#endif
 
-#ifdef ECO_DLL
+#if defined(ECO_DLL) && !defined(ECO_CALCULATOR_KIND) && !defined(ECO_LAB2_ONLY)
 #ifdef GetIEcoComponentFactoryPtr
 #undef GetIEcoComponentFactoryPtr
 #endif
 ECO_EXPORT IEcoComponentFactory* ECOCALLMETHOD GetIEcoComponentFactoryPtr(void) {
-#if defined(ECO_CALCULATOR_KIND)
-#if ECO_CALCULATOR_KIND == 0
-    return GetCalculatorAFactory();
-#elif ECO_CALCULATOR_KIND == 1
-    return GetCalculatorBFactory();
-#elif ECO_CALCULATOR_KIND == 2
-    return GetCalculatorCFactory();
-#elif ECO_CALCULATOR_KIND == 3
-    return GetCalculatorDFactory();
-#elif ECO_CALCULATOR_KIND == 4
-    return GetCalculatorEFactory();
-#else
-#error Unsupported ECO_CALCULATOR_KIND
-#endif
-#elif defined(ECO_LAB2_ONLY)
-    return GetEcoLab2Factory();
-#elif defined(POLYFIT_QR_ONLY)
+#ifdef POLYFIT_QR_ONLY
     return &qr_factory.factory;
 #else
     return &normal_factory.factory;
 #endif
 }
 #endif
-

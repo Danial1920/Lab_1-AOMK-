@@ -11,6 +11,7 @@
 #include "IEcoCalculatorX.h"
 #include "IEcoCalculatorY.h"
 #include "IEcoLab1.h"
+#include "IEcoCalculatorSafe.h"
 #include "IEcoMemoryAllocator1.h"
 #if defined(ECO_LIB) || defined(ECO_DLL)
 #include "IEcoSystem1.h"
@@ -18,14 +19,14 @@
 struct IEcoSystem1;
 #endif
 typedef struct CPolynomialMath CPolynomialMath;
-typedef struct CPolynomialXView {
-    IEcoCalculatorX iface;
-    CPolynomialMath* owner;
-} CPolynomialXView;
 typedef struct CPolynomialYView {
     IEcoCalculatorY iface;
     CPolynomialMath* owner;
 } CPolynomialYView;
+typedef struct CPolynomialSafeView {
+    IEcoCalculatorSafe iface;
+    CPolynomialMath* owner;
+} CPolynomialSafeView;
 typedef struct CPolynomialUnknownView {
     IEcoUnknown iface;
     CPolynomialMath* owner;
@@ -33,14 +34,14 @@ typedef struct CPolynomialUnknownView {
 struct CPolynomialMath {
     IEcoPolynomialMath math;
     CPolynomialUnknownView inner_unknown;
-    CPolynomialXView calculator_x;
+    CPolynomialSafeView calculator_safe;
     CPolynomialYView calculator_y;
     uint32_t references;
     uint32_t method;
     IEcoMemoryAllocator1* m_pIMem;
     struct IEcoSystem1* m_pISys;
     IEcoUnknown* m_pIOuter;
-    IEcoCalculatorX* included_x;
+    IEcoUnknown* aggregated_b;
     IEcoCalculatorY* included_y;
 };
 #endif

@@ -1,28 +1,26 @@
 # Матрица проверок Lab1 и Lab2
 
-| Набор | Проверяемое поведение | Способ выполнения |
+Результаты от 28 октября 2026; числа означают проверенные условия, а не покрытие строк.
+
+| Набор | Проверяемое поведение | Фактический результат |
 |---|---|---|
-| Host Lab1 | Полиномы, типы, нулевые указатели, ошибки, allocator | make test |
-| Host ACOM contracts | Интерфейсные контракты и очистка памяти | make test |
-| Eco A–E/Lab1/Lab2 | Получение всех восьми CID через реальные factory и bus | make eco-test |
-| QueryInterface | Все пары поддерживаемых интерфейсов, self, unknown, неизвестный IID | Eco integration |
-| Включение | Lab1→C→A/D→B, вызовы дочерних операций | Eco integration |
-| Агрегирование | E→B, Lab2→Lab1; приватный unknown, контролирующий unknown | Eco integration |
-| Reference lifetime | Баланс AddRef/Release, ранний Release корня, живые дочерние интерфейсы | Eco integration |
-| Fault injection | Отказ allocator, неизвестный IID в factory, очистка частичного графа | Eco integration |
-| Деление | Отрицательные/дробные/нулевые аргументы, TryDivision с нулём/NULL | Host + Eco |
-| Численные регрессии | Обе реализации, пять типов, точность long и ошибка 1005, FitVector, IEcoPolynomial | Host + Eco |
-| C89 | Компонентные исходники, строгие предупреждения | make strict |
-| Отсутствие libc | Запрещённые заголовки/вызовы, nm undefined symbols | make check-no-libc |
-| Sanitizer | AddressSanitizer/UBSan для Host и реального Eco-клиента | make sanitize |
-| Xcode Static | Компонент и UnitTest Debug/Release | README commands |
-| Xcode Dynamic | Восемь отдельных CID-файлов Debug/Release | build_dynamic_runtime_macos.sh |
-| Dynamic integration | Официальный bus loader, операции, identity; 44 условия | DynamicRuntimeTest.c |
-| Dynamic dependency | nm/otool для каждой dylib, DYLD trace всех восьми | Runtime script |
-| Отсутствующий runtime | Отдельный процесс без dylib обязан вернуть ошибку | Runtime script |
-| MATLAB/SciPy | Независимые численные эталоны Lab1 | make reference / matlab-reference с Python, содержащим SciPy/NumPy |
-| Linux matrix | TARGET 0/1 × DEBUG 0/1 | SKIPPED без официального ECO_TOOLCHAIN |
+| Host | Полиномы, типы, ошибки, контракты, allocator | 180 / 0 |
+| Eco A и C | По семь CID через реальные factory/bus, полные матрицы QI | 1062 / 0 и 1110 / 0 |
+| Включение | Lab1 → E (резерв D), D → B (резерв A/C), вызовы дочерних интерфейсов | Eco и отдельный клиент |
+| Агрегирование | Lab2 → Lab1 → B; E → B; controlling unknown | Матрицы identity, баланс ссылок, ранний Release Lab2 при живом B.X |
+| Fault injection | Восемь factory, семь групп отказов Alloc; четыре отсутствующие зависимости, два fallback | Каждый вариант Eco; 267/267/live 0 |
+| Калькулятор | Официальные int16/int32 сигнатуры, отрицательные значения, нули, границы, Safe | Eco и клиент |
+| Horner | Восемь точек с независимым эталоном, NULL, пустой ввод, переполнение, широкий последний результат | Публичный клиент A/C |
+| Раздельные архивы | Один объект клиента, внешние официальные заголовки, A/C с одним CID | Debug/Release: A 523/0, C 559/0; SHA256 неизменён |
+| Численные регрессии | Два алгоритма, пять типов, точность long, FitVector, IEcoPolynomial | Host и Eco |
+| C89 и libc | Строгая компиляция компонентов и клиентов; символы O0/O2 | make strict / check-no-libc: PASS |
+| Sanitizer | ASan/UBSan Host + настоящий Eco-клиент для A и C | PASS, без диагностик |
+| Xcode Static | Компонент и UnitTest Debug/Release; затем запуск | BUILD SUCCEEDED; 1062/0 в каждой конфигурации |
+| Xcode Dynamic | 7 отдельных CID, Debug/Release × A/C | A 523/0, C 559/0; четыре успешных запуска |
+| Loader | DYLD trace всех 7 библиотек, nm/otool | PASS; пустой runtime возвращает ненулевой код |
+| Отрицательные мутации | Изменённая арифметика, abort(), зависимости и неверный Framework | Тесты/аудитор действительно обнаруживают ошибку |
+| Валидатор эталонов | Неполные, дублированные, нечисловые и ошибочные результаты | 8 проверок PASS |
+| MATLAB/SciPy | Сохранённые независимые сравнения от 25 октября 2026 | MATLAB 18, SciPy/NumPy 36 массивов; текущий прогон не повторял внешние эталоны |
+| Linux/Windows/EcoOS | Бинарная сборка | Не проверена; matrix без официального toolchain — SKIPPED |
 
-Полный прогон: `make ECO_FRAMEWORK="$ECO_FRAMEWORK" check eco-test`. Количества проверок и ошибки выводятся в консоль; тест возвращает ненулевой код при ошибке или нарушении ожидаемого плана. Сборочные инструкции платформ за пределами macOS не являются свидетельством выполненного запуска.
-
-Последний полный прогон: Host 183/0, Eco 977/0, tracked allocator 345/345/live 0; Dynamic Debug и Release по 44/0; валидатор эталонов 8/8. Числа являются счётчиками проверенных условий, а не процентом покрытия.
+Воспроизведение: `make ECO_FRAMEWORK="$ECO_FRAMEWORK" check eco-test-variants validation-build`; отдельный Release-клиент: `CONFIGURATION=Release make ECO_FRAMEWORK="$ECO_FRAMEWORK" component-clients`. Dynamic-команды приведены в README. Тест завершается ненулевым кодом при ошибке или неполном плане. Вызов Release после уничтожения объекта запрещён; проверяется освобождение ровно по числу владеемых ссылок, а не доступ к уже освобождённой памяти.

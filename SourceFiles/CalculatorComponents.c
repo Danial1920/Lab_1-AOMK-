@@ -36,10 +36,6 @@ static void calculator_destroy(CCalculatorComponent* component) {
     memory = component->memory;
     if (component->included_x != 0)
         component->included_x->pVTbl->Release(component->included_x);
-    if (component->included_y != 0)
-        component->included_y->pVTbl->Release(component->included_y);
-    if (component->included_subtractor != 0)
-        component->included_subtractor->pVTbl->Release(component->included_subtractor);
     if (component->aggregated_inner != 0)
         component->aggregated_inner->pVTbl->Release(component->aggregated_inner);
     memory->pVTbl->Free(memory, component);
@@ -85,6 +81,10 @@ static int16_t ECOCALLMETHOD calculator_inner_qi(IEcoUnknown* me,
         calculator_add_ref(component); *ppv = &component->y.iface;
         return ERR_ECO_SUCCESS;
     }
+    if (guid_equal(riid, &IID_IEcoCalculatorSafe) && component->kind >= CALCULATOR_C) {
+        calculator_add_ref(component); *ppv = &component->safe.iface;
+        return ERR_ECO_SUCCESS;
+    }
     return ERR_ECO_NOINTERFACE;
 }
 static IEcoUnknownVTbl calculator_inner_vtbl = {
@@ -126,54 +126,71 @@ static uint32_t ECOCALLMETHOD calculator_y_release(IEcoCalculatorYPtr me) {
     if (me == 0) return 0u;
     return calculator_release(((CCalculatorYView*)me)->owner);
 }
-static double ECOCALLMETHOD calculator_add(IEcoCalculatorXPtr me, double a, double b) {
+/* The standard ABI uses int16 operands. Promote before arithmetic. */
+static int32_t ECOCALLMETHOD calculator_add(IEcoCalculatorXPtr me, int16_t a, int16_t b) {
     CCalculatorComponent* component;
-    if (me == 0) return 0.0;
+    if (me == 0) return 0;
     component = ((CCalculatorXView*)me)->owner;
     if (component->included_x != 0)
         return component->included_x->pVTbl->Addition(component->included_x, a, b);
-    return a + b;
+    return (int32_t)a + (int32_t)b;
 }
-static double ECOCALLMETHOD calculator_subtract(IEcoCalculatorXPtr me, double a, double b) {
-    CCalculatorComponent* component;
-    if (me == 0) return 0.0;
+static int16_t ECOCALLMETHOD calculator_subtract(IEcoCalculatorXPtr me, int16_t a, int16_t b) {
+    CCalculatorComponent* component; int32_t value;
+    if (me == 0) return 0;
     component = ((CCalculatorXView*)me)->owner;
-    if (component->included_subtractor != 0)
-        return component->included_subtractor->pVTbl->Subtraction(component->included_subtractor, a, b);
     if (component->included_x != 0)
         return component->included_x->pVTbl->Subtraction(component->included_x, a, b);
-    return a - b;
+    value = (int32_t)a - (int32_t)b;
+    /* Define the educational int16 wrap without out-of-range conversion. */
+    if (value > 32767L) value -= 65536L;
+    if (value < -32768L) value += 65536L;
+    return (int16_t)value;
 }
-/* C delegates complete Y operations to D. D and E implement the Y
- * primitives; their X paths delegate to included/aggregated B respectively. */
-static double ECOCALLMETHOD calculator_multiply(IEcoCalculatorYPtr me, double a, double b) {
-    CCalculatorComponent* component;
-    if (me == 0) return 0.0;
-    component = ((CCalculatorYView*)me)->owner;
-    if (component->included_y != 0)
-        return component->included_y->pVTbl->Multiplication(component->included_y, a, b);
-    return a * b;
+static int32_t ECOCALLMETHOD calculator_multiply(IEcoCalculatorYPtr me, int16_t a, int16_t b) {
+    if (me == 0) return 0;
+    return (int32_t)a * (int32_t)b;
 }
-static double ECOCALLMETHOD calculator_divide(IEcoCalculatorYPtr me, double a, double b) {
-    CCalculatorComponent* component;
-    if (me == 0 || b == 0.0) return 0.0;
-    component = ((CCalculatorYView*)me)->owner;
-    if (component->included_y != 0)
-        return component->included_y->pVTbl->Division(component->included_y, a, b);
-    return a / b;
-}
-static int16_t ECOCALLMETHOD calculator_try_divide(IEcoCalculatorYPtr me,
-    double a, double b, double* result) {
-    CCalculatorComponent* component;
-    if (result == 0) return ERR_ECO_POINTER;
-    *result = 0.0;
-    if (me == 0) return ERR_ECO_POINTER;
-    if (b == 0.0) return ERR__POLYFIT_ARGUMENT;
-    component = ((CCalculatorYView*)me)->owner;
-    if (component->included_y != 0)
-        return component->included_y->pVTbl->TryDivision(component->included_y, a, b, result);
-    *result = a / b;
+static int16_t checked_division(int16_t a, int16_t b, int16_t* result) {
+    int32_t left, right;
+    if (b == 0) return ERR_ECO_CALCULATOR_ZERO;
+    if (a == -32768L && b == -1) return ERR_ECO_CALCULATOR_OVERFLOW;
+    /* Explicit truncation toward zero, including on pre-C99 compilers. */
+    left = a; right = b;
+    if (left < 0) left = -left;
+    if (right < 0) right = -right;
+    left /= right;
+    if ((a < 0) != (b < 0)) left = -left;
+    *result = (int16_t)left;
     return ERR_ECO_SUCCESS;
+}
+static int16_t ECOCALLMETHOD calculator_divide(IEcoCalculatorYPtr me, int16_t a, int16_t b) {
+    int16_t result;
+    if (me == 0) return 0;
+    result = 0; checked_division(a, b, &result);
+    return result;
+}
+static int16_t ECOCALLMETHOD calculator_safe_qi(IEcoCalculatorSafe* me,
+    const UGUID* riid, voidptr_t* ppv) {
+    if (ppv == 0) return ERR_ECO_POINTER;
+    *ppv = 0;
+    if (me == 0 || riid == 0) return ERR_ECO_POINTER;
+    return calculator_public_qi(((CCalculatorSafeView*)me)->owner, riid, ppv);
+}
+static uint32_t ECOCALLMETHOD calculator_safe_add_ref(IEcoCalculatorSafe* me) {
+    if (me == 0) return 0u;
+    return calculator_add_ref(((CCalculatorSafeView*)me)->owner);
+}
+static uint32_t ECOCALLMETHOD calculator_safe_release(IEcoCalculatorSafe* me) {
+    if (me == 0) return 0u;
+    return calculator_release(((CCalculatorSafeView*)me)->owner);
+}
+static int16_t ECOCALLMETHOD calculator_try_divide(IEcoCalculatorSafe* me,
+    int16_t a, int16_t b, int16_t* result) {
+    if (result == 0) return ERR_ECO_POINTER;
+    *result = 0;
+    if (me == 0) return ERR_ECO_POINTER;
+    return checked_division(a, b, result);
 }
 static IEcoCalculatorXVTbl calculator_x_vtbl = {
     calculator_x_qi, calculator_x_add_ref, calculator_x_release,
@@ -181,8 +198,14 @@ static IEcoCalculatorXVTbl calculator_x_vtbl = {
 };
 static IEcoCalculatorYVTbl calculator_y_vtbl = {
     calculator_y_qi, calculator_y_add_ref, calculator_y_release,
-    calculator_multiply, calculator_divide, calculator_try_divide
+    calculator_multiply, calculator_divide
 };
+static IEcoCalculatorSafeVTbl calculator_safe_vtbl = {
+    calculator_safe_qi, calculator_safe_add_ref, calculator_safe_release,
+    calculator_try_divide
+};
+static int16_t calculator_create(IEcoMemoryAllocator1*, uint32_t,
+    IEcoUnknown*, IEcoInterfaceBus1*, CCalculatorComponent**);
 static const UGUID* calculator_cid(uint32_t kind) {
     if (kind == CALCULATOR_A) return &CID_EcoCalculatorA;
     if (kind == CALCULATOR_B) return &CID_EcoCalculatorB;
@@ -197,14 +220,14 @@ static int16_t calculator_child(IEcoMemoryAllocator1* memory,
     *result = 0;
     if (bus != 0)
         return bus->pVTbl->QueryComponent(bus, calculator_cid(kind), outer, iid, result);
-    status = Calculator_CreateOnBus(memory, kind, outer, 0, &child);
+    status = calculator_create(memory, kind, outer, 0, &child);
     if (status != ERR_ECO_SUCCESS) return status;
     status = child->inner_unknown.iface.pVTbl->QueryInterface(
         &child->inner_unknown.iface, iid, result);
     child->inner_unknown.iface.pVTbl->Release(&child->inner_unknown.iface);
     return status;
 }
-int16_t Calculator_CreateOnBus(IEcoMemoryAllocator1* memory, uint32_t kind,
+static int16_t calculator_create(IEcoMemoryAllocator1* memory, uint32_t kind,
     IEcoUnknown* outer, IEcoInterfaceBus1* bus, CCalculatorComponent** result) {
     CCalculatorComponent* component; int16_t status;
     if (result == 0) return ERR_ECO_POINTER;
@@ -217,38 +240,26 @@ int16_t Calculator_CreateOnBus(IEcoMemoryAllocator1* memory, uint32_t kind,
     component->inner_unknown.owner = component;
     component->x.iface.pVTbl = &calculator_x_vtbl;
     component->y.iface.pVTbl = &calculator_y_vtbl;
+    component->safe.iface.pVTbl = &calculator_safe_vtbl;
+    component->safe.owner = component;
     component->x.owner = component; component->y.owner = component;
     component->references = 1u; component->kind = kind;
     component->memory = memory; component->outer = outer;
-    component->included_x = 0; component->included_y = 0;
-    component->included_subtractor = 0;
-    component->aggregated_inner = 0; component->aggregated_x = 0;
+    component->included_x = 0; component->aggregated_inner = 0;
     memory->pVTbl->AddRef(memory);
     status = ERR_ECO_SUCCESS;
-    if (kind == CALCULATOR_C)
-        status = calculator_child(memory, bus, CALCULATOR_A, 0,
-            &IID_IEcoCalculatorX, (voidptr_t*)&component->included_x);
-    if (status == ERR_ECO_SUCCESS && kind == CALCULATOR_C)
-        status = calculator_child(memory, bus, CALCULATOR_D, 0,
-            &IID_IEcoCalculatorY, (voidptr_t*)&component->included_y);
-    if (status == ERR_ECO_SUCCESS && kind == CALCULATOR_C)
-        status = component->included_y->pVTbl->QueryInterface(component->included_y,
-            &IID_IEcoCalculatorX, (voidptr_t*)&component->included_subtractor);
-    if (kind == CALCULATOR_D)
+    /* A and C are independent implementations of the same component contract. */
+    if (kind == CALCULATOR_D) {
         status = calculator_child(memory, bus, CALCULATOR_B, 0,
             &IID_IEcoCalculatorX, (voidptr_t*)&component->included_x);
-    if (kind == CALCULATOR_E) {
+        if (status == ERR_ECO_COMPONENT_NOTFOUND || status == ERR_ECO_NOINTERFACE)
+            status = calculator_child(memory, bus, CALCULATOR_A, 0,
+                &IID_IEcoCalculatorX, (voidptr_t*)&component->included_x);
+    }
+    if (kind == CALCULATOR_E)
         status = calculator_child(memory, bus, CALCULATOR_B,
             calculator_controller(component), &IID_IEcoUnknown,
             (voidptr_t*)&component->aggregated_inner);
-        if (status == ERR_ECO_SUCCESS) {
-            status = component->aggregated_inner->pVTbl->QueryInterface(
-                component->aggregated_inner, &IID_IEcoCalculatorX,
-                (voidptr_t*)&component->aggregated_x);
-            if (status == ERR_ECO_SUCCESS)
-                component->aggregated_x->pVTbl->Release(component->aggregated_x);
-        }
-    }
     if (status != ERR_ECO_SUCCESS) {
         calculator_inner_release(&component->inner_unknown.iface);
         return status;
@@ -256,10 +267,16 @@ int16_t Calculator_CreateOnBus(IEcoMemoryAllocator1* memory, uint32_t kind,
     *result = component;
     return ERR_ECO_SUCCESS;
 }
+#ifndef ECO_CALCULATOR_KIND
 int16_t Calculator_Create(IEcoMemoryAllocator1* memory, uint32_t kind,
     IEcoUnknown* outer, CCalculatorComponent** result) {
-    return Calculator_CreateOnBus(memory, kind, outer, 0, result);
+    return calculator_create(memory, kind, outer, 0, result);
 }
+int16_t Calculator_CreateOnBus(IEcoMemoryAllocator1* memory, uint32_t kind,
+    IEcoUnknown* outer, IEcoInterfaceBus1* bus, CCalculatorComponent** result) {
+    return calculator_create(memory, kind, outer, bus, result);
+}
+#endif
 
 typedef struct CCalculatorFactory {
     IEcoComponentFactory factory;
@@ -313,7 +330,7 @@ static int16_t ECOCALLMETHOD factory_alloc(IEcoComponentFactoryPtr_t me,
         bus->pVTbl->Release(bus);
         return ERR_ECO_GET_MEMORY_ALLOCATOR;
     }
-    status = Calculator_CreateOnBus(memory, factory->kind, outer, bus, &component);
+    status = calculator_create(memory, factory->kind, outer, bus, &component);
     bus->pVTbl->Release(bus);
     memory->pVTbl->Release(memory);
     if (status != ERR_ECO_SUCCESS) return status;
@@ -332,7 +349,7 @@ static char_t* ECOCALLMETHOD factory_name(IEcoComponentFactoryPtr_t me) {
     if (me == 0) return ""; return ((CCalculatorFactory*)me)->name;
 }
 static char_t* ECOCALLMETHOD factory_version(IEcoComponentFactoryPtr_t me) {
-    if (me == 0) return ""; return "1.0.0";
+    if (me == 0) return ""; return "2.0.0";
 }
 static char_t* ECOCALLMETHOD factory_manufacturer(IEcoComponentFactoryPtr_t me) {
     if (me == 0) return ""; return "Laboratory 2";
@@ -341,37 +358,58 @@ static IEcoComponentFactoryVTbl factory_vtbl = {
     factory_qi, factory_add_ref, factory_release, factory_alloc,
     factory_init, factory_name, factory_version, factory_manufacturer
 };
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 0
 static CCalculatorFactory factory_a = {{&factory_vtbl},1u,CALCULATOR_A,"CalculatorA"};
-static CCalculatorFactory factory_b = {{&factory_vtbl},1u,CALCULATOR_B,"CalculatorB"};
-static CCalculatorFactory factory_c = {{&factory_vtbl},1u,CALCULATOR_C,"CalculatorC"};
-static CCalculatorFactory factory_d = {{&factory_vtbl},1u,CALCULATOR_D,"CalculatorD"};
-static CCalculatorFactory factory_e = {{&factory_vtbl},1u,CALCULATOR_E,"CalculatorE"};
 IEcoComponentFactory* GetCalculatorAFactory(void) { return &factory_a.factory; }
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 1
+static CCalculatorFactory factory_b = {{&factory_vtbl},1u,CALCULATOR_B,"CalculatorB"};
 IEcoComponentFactory* GetCalculatorBFactory(void) { return &factory_b.factory; }
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 2
+static CCalculatorFactory factory_c = {{&factory_vtbl},1u,CALCULATOR_C,"CalculatorC"};
 IEcoComponentFactory* GetCalculatorCFactory(void) { return &factory_c.factory; }
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 3
+static CCalculatorFactory factory_d = {{&factory_vtbl},1u,CALCULATOR_D,"CalculatorD"};
 IEcoComponentFactory* GetCalculatorDFactory(void) { return &factory_d.factory; }
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 4
+static CCalculatorFactory factory_e = {{&factory_vtbl},1u,CALCULATOR_E,"CalculatorE"};
 IEcoComponentFactory* GetCalculatorEFactory(void) { return &factory_e.factory; }
-
-int16_t CalculatorComponents_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus) {
-    int16_t status;
-    if (bus == 0) return ERR_ECO_POINTER;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorA,
-        (IEcoUnknownPtr_t)GetCalculatorAFactory()); if (status != ERR_ECO_SUCCESS) return status;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorB,
-        (IEcoUnknownPtr_t)GetCalculatorBFactory()); if (status != ERR_ECO_SUCCESS) goto rollback_a;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorC,
-        (IEcoUnknownPtr_t)GetCalculatorCFactory()); if (status != ERR_ECO_SUCCESS) goto rollback_b;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorD,
-        (IEcoUnknownPtr_t)GetCalculatorDFactory()); if (status != ERR_ECO_SUCCESS) goto rollback_c;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoCalculatorE,
-        (IEcoUnknownPtr_t)GetCalculatorEFactory());
-    if (status == ERR_ECO_SUCCESS) return status;
-    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorD);
-rollback_c:
-    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorC);
-rollback_b:
-    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorB);
-rollback_a:
-    bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorA);
-    return status;
+#endif
+#if defined(ECO_CALCULATOR_KIND) && ECO_CALCULATOR_KIND == 2
+IEcoComponentFactory* GetIEcoComponentFactoryPtr_4828F6552E4540E78121EBD220DC360E = &factory_c.factory;
+#elif !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 0
+#ifdef ECO_REPLACE_A_WITH_C
+IEcoComponentFactory* GetIEcoComponentFactoryPtr_4828F6552E4540E78121EBD220DC360E = &factory_c.factory;
+#else
+IEcoComponentFactory* GetIEcoComponentFactoryPtr_4828F6552E4540E78121EBD220DC360E = &factory_a.factory;
+#endif
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 1
+IEcoComponentFactory* GetIEcoComponentFactoryPtr_AE202E543CE54550899603BD70C62565 = &factory_b.factory;
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 3
+IEcoComponentFactory* GetIEcoComponentFactoryPtr_3A8E44677E82475CB4A3719ED8397E61 = &factory_d.factory;
+#endif
+#if !defined(ECO_CALCULATOR_KIND) || ECO_CALCULATOR_KIND == 4
+IEcoComponentFactory* GetIEcoComponentFactoryPtr_872FEF1DE3314B87AD44D1E7C232C2F0 = &factory_e.factory;
+#endif
+#if defined(ECO_DLL) && defined(ECO_CALCULATOR_KIND)
+ECO_EXPORT IEcoComponentFactory* ECOCALLMETHOD GetIEcoComponentFactoryPtr(void) {
+#if ECO_CALCULATOR_KIND == 0
+    return GetCalculatorAFactory();
+#elif ECO_CALCULATOR_KIND == 1
+    return GetCalculatorBFactory();
+#elif ECO_CALCULATOR_KIND == 2
+    return GetCalculatorCFactory();
+#elif ECO_CALCULATOR_KIND == 3
+    return GetCalculatorDFactory();
+#elif ECO_CALCULATOR_KIND == 4
+    return GetCalculatorEFactory();
+#else
+#error Unsupported ECO_CALCULATOR_KIND
+#endif
 }
+#endif

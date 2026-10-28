@@ -1,0 +1,110 @@
+clang -std=c89 -Wall -Wextra -fno-stack-protector -DECO_APPLE  -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c -o "BuildFiles/Host/EcoLab1GeneratedUnitTest"
+"BuildFiles/Host/EcoLab1GeneratedUnitTest"
+REFERENCE {"case":"quadratic","method":0,"coefficients":[2,0,3]}
+REFERENCE {"case":"cubic","method":0,"coefficients":[0.99999999999999911,-1.9999999999999987,0.50000000000000466,2.9999999999999969]}
+REFERENCE {"case":"constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":0,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":0,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":0,"coefficients":[1.98,3]}
+REFERENCE {"case":"opposite_extremes","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"quadratic","method":1,"coefficients":[2,2.1065000811460208e-16,3]}
+REFERENCE {"case":"cubic","method":1,"coefficients":[0.99999999999999978,-2.0000000000000004,0.49999999999999989,3]}
+REFERENCE {"case":"constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":1,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":1,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":1,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":1,"coefficients":[1.9799999999999995,3]}
+REFERENCE {"case":"opposite_extremes","method":1,"coefficients":[1,0]}
+Проверок: 180, ошибок: 0
+DesignFiles/Report/check_strict_c89.sh
+STRICT C89 CHECK PASSED: component and four test clients
+DesignFiles/Report/check_no_libc.sh
+External component symbols: none
+External component symbols: none
+NO LIBC CHECK PASSED: source + external symbols at O0/O2
+ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework" DesignFiles/Report/check_sanitizers.sh
+clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -fsanitize=address,undefined -fno-omit-frame-pointer -g  -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c -o "BuildFiles/Sanitizers/A/EcoLab1GeneratedUnitTest"
+clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -fsanitize=address,undefined -fno-omit-frame-pointer -g  -DECO_AARCH64 -DECO_LIB -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.System1/SharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c /Users/danial2006/Downloads/Eco.Framework/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a /Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a /Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a /Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a -o "BuildFiles/Sanitizers/A/EcoLab1EcoTest"
+REFERENCE {"case":"quadratic","method":0,"coefficients":[2,0,3]}
+REFERENCE {"case":"cubic","method":0,"coefficients":[0.99999999999999911,-1.9999999999999987,0.50000000000000466,2.9999999999999969]}
+REFERENCE {"case":"constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":0,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":0,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":0,"coefficients":[1.98,3]}
+REFERENCE {"case":"opposite_extremes","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"quadratic","method":1,"coefficients":[2,2.1065000811460208e-16,3]}
+REFERENCE {"case":"cubic","method":1,"coefficients":[0.99999999999999978,-2.0000000000000004,0.49999999999999989,3]}
+REFERENCE {"case":"constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":1,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":1,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":1,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":1,"coefficients":[1.9799999999999995,3]}
+REFERENCE {"case":"opposite_extremes","method":1,"coefficients":[1,0]}
+Проверок: 180, ошибок: 0
+Eco allocator: allocations=267 frees=267 live=0
+Проверок: 1062, ошибок: 0
+clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -fsanitize=address,undefined -fno-omit-frame-pointer -g -DECO_REPLACE_A_WITH_C -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c -o "BuildFiles/Sanitizers/C/EcoLab1GeneratedUnitTest"
+clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -DECO_APPLE -fsanitize=address,undefined -fno-omit-frame-pointer -g -DECO_REPLACE_A_WITH_C -DECO_AARCH64 -DECO_LIB -IDependenciesFiles/Eco.Core1/SharedFiles -IDependenciesFiles/Eco.InterfaceBus1/SharedFiles -IDependenciesFiles/Eco.MemoryManager1/SharedFiles -IHeaderFiles -ISharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/SharedFiles -I/Users/danial2006/Downloads/Eco.Framework/Eco.System1/SharedFiles SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c /Users/danial2006/Downloads/Eco.Framework/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a /Users/danial2006/Downloads/Eco.Framework/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a /Users/danial2006/Downloads/Eco.Framework/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a /Users/danial2006/Downloads/Eco.Framework/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a -o "BuildFiles/Sanitizers/C/EcoLab1EcoTest"
+REFERENCE {"case":"quadratic","method":0,"coefficients":[2,0,3]}
+REFERENCE {"case":"cubic","method":0,"coefficients":[0.99999999999999911,-1.9999999999999987,0.50000000000000466,2.9999999999999969]}
+REFERENCE {"case":"constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":0,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":0,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":0,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":0,"coefficients":[1.98,3]}
+REFERENCE {"case":"opposite_extremes","method":0,"coefficients":[1,0]}
+REFERENCE {"case":"quadratic","method":1,"coefficients":[2,2.1065000811460208e-16,3]}
+REFERENCE {"case":"cubic","method":1,"coefficients":[0.99999999999999978,-2.0000000000000004,0.49999999999999989,3]}
+REFERENCE {"case":"constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"large_offset","method":1,"coefficients":[2,3]}
+REFERENCE {"case":"tiny_identity","method":1,"coefficients":[1,0]}
+REFERENCE {"case":"huge_x_constant","method":1,"coefficients":[7]}
+REFERENCE {"case":"huge_y_constant","method":1,"coefficients":[1e+308]}
+REFERENCE {"case":"noisy_linear","method":1,"coefficients":[1.9799999999999995,3]}
+REFERENCE {"case":"opposite_extremes","method":1,"coefficients":[1,0]}
+Проверок: 180, ошибок: 0
+Eco allocator: allocations=267 frees=267 live=0
+Проверок: 1110, ошибок: 0
+SANITIZER CHECK PASSED: Host + real Eco integration, A/C; allocator balance asserted
+python3 DesignFiles/Reference/test_reference_validation.py
+test_duplicate (__main__.ValidationTests) ... ok
+test_missing_case_or_algorithm (__main__.ValidationTests) ... ok
+test_nonfinite (__main__.ValidationTests) ... ok
+test_real_mismatch_fails (__main__.ValidationTests) ... ok
+test_reference_shape_and_nonfinite (__main__.ValidationTests) ... ok
+test_truncated_or_extra_coefficients (__main__.ValidationTests) ... ok
+test_unknown_case_or_method (__main__.ValidationTests) ... ok
+test_valid_fixture (__main__.ValidationTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.002s
+
+OK
+ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework" python3 DesignFiles/Report/build_component_clients.py
+A: official X, QI matrix and identity checked
+B: official X, QI matrix and identity checked
+D includes B: official X/Y, QI matrix and identity checked
+E aggregates B: official X/Y, QI matrix and identity checked
+Lab1: official X/Y, QI matrix and identity checked
+Lab1 QR: official X/Y, QI matrix and identity checked
+Lab2: official X/Y, QI matrix and identity checked
+Lab2: Horner through included A/C+D; Lab2 -> Lab1 -> B lifetime checked
+Public client A: checks=523 failures=0
+C replacing A (same CID): official X/Y, QI matrix and identity checked
+B: official X, QI matrix and identity checked
+D includes B: official X/Y, QI matrix and identity checked
+E aggregates B: official X/Y, QI matrix and identity checked
+Lab1: official X/Y, QI matrix and identity checked
+Lab1 QR: official X/Y, QI matrix and identity checked
+Lab2: official X/Y, QI matrix and identity checked
+Lab2: Horner through included A/C+D; Lab2 -> Lab1 -> B lifetime checked
+Public client C: checks=559 failures=0
+Same client object SHA256: 9a6d2790d708c2acfdf2070a925213d3cdea6dee3b31f112981dfb089b74d594
+Independent archives and A/C substitution PASSED: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/Components/Debug

@@ -4,6 +4,7 @@
 #include "IEcoCalculatorX.h"
 #include "IEcoCalculatorY.h"
 #include "IEcoLab1.h"
+#include "IEcoCalculatorSafe.h"
 #include "IEcoLab2.h"
 #include "IEcoMemoryAllocator1.h"
 #include "IEcoInterfaceBus1.h"
@@ -26,6 +27,10 @@ typedef struct CCalculatorYView {
     IEcoCalculatorY iface;
     CCalculatorComponent* owner;
 } CCalculatorYView;
+typedef struct CCalculatorSafeView {
+    IEcoCalculatorSafe iface;
+    CCalculatorComponent* owner;
+} CCalculatorSafeView;
 typedef struct CCalculatorUnknownView {
     IEcoUnknown iface;
     CCalculatorComponent* owner;
@@ -34,29 +39,23 @@ struct CCalculatorComponent {
     CCalculatorUnknownView inner_unknown;
     CCalculatorXView x;
     CCalculatorYView y;
+    CCalculatorSafeView safe;
     uint32_t references;
     uint32_t kind;
     IEcoMemoryAllocator1* memory;
     IEcoUnknown* outer;
     IEcoCalculatorX* included_x;
-    IEcoCalculatorY* included_y;
-    IEcoCalculatorX* included_subtractor;
     IEcoUnknown* aggregated_inner;
-    IEcoCalculatorX* aggregated_x; /* Borrowed; the inner unknown owns its lifetime. */
 };
 typedef struct CEcoLab2Component CEcoLab2Component;
-typedef struct CEcoLab2YView {
-    IEcoCalculatorY iface;
-    CEcoLab2Component* owner;
-} CEcoLab2YView;
 struct CEcoLab2Component {
     IEcoLab2 lab2;
-    CEcoLab2YView calculator_y;
     uint32_t references;
     IEcoMemoryAllocator1* memory;
     struct IEcoSystem1* system;
     IEcoUnknown* lab1_inner;
-    IEcoCalculatorY* included_e;
+    IEcoCalculatorX* included_a;
+    IEcoCalculatorY* included_d;
 };
 int16_t Calculator_Create(IEcoMemoryAllocator1* memory, uint32_t kind,
     IEcoUnknown* outer, CCalculatorComponent** result);

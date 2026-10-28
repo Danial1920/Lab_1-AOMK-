@@ -1,16 +1,54 @@
-﻿/* IEcoCalculatorX: calculator operations exposed by ACOM Lab 2. */
-#ifndef I_ECO_CALCULATOR_X_H
-#define I_ECO_CALCULATOR_X_H
+/*
+ * <кодировка символов>
+ *   Cyrillic (UTF-8 with signature) - Codepage 65001
+ * </кодировка символов>
+ *
+ * <сводка>
+ *   IEcoCalculatorX
+ * </сводка>
+ *
+ * <описание>
+ *   Данный заголовок описывает интерфейс IEcoCalculatorX
+ * </описание>
+ *
+ * <ссылка>
+ *
+ * </ссылка>
+ *
+ * <автор>
+ *   Copyright (c) 2018 Vladimir Bashev. All rights reserved.
+ * </автор>
+ *
+ */
+
+#ifndef __I_ECO_CALCULATOR_X_H__
+#define __I_ECO_CALCULATOR_X_H__
+
 #include "IEcoBase1.h"
-static const UGUID IID_IEcoCalculatorX = {0x01,0x10,{0xD3,0xB3,0xE2,0xF1,0x8D,0x21,0x4A,0x6B,0x9A,0x40,0x44,0,0,0,0,0x50}};
-typedef struct IEcoCalculatorX IEcoCalculatorX;
-typedef struct IEcoCalculatorX* IEcoCalculatorXPtr;
+
+/* IEcoCalculatorX IID = {93221116-2248-4742-AE06-82819447843D} */
+#ifndef __IID_IEcoCalculatorX
+static const UGUID IID_IEcoCalculatorX = {0x01, 0x10, {0x93, 0x22, 0x11, 0x16, 0x22, 0x48, 0x47, 0x42, 0xAE, 0x06, 0x82, 0x81, 0x94, 0x47, 0x84, 0x3D}};
+#endif /* __IID_IEcoCalculatorX */
+
+typedef struct IEcoCalculatorX* IEcoCalculatorXPtr_t;
+
 typedef struct IEcoCalculatorXVTbl {
-    int16_t (ECOCALLMETHOD *QueryInterface)(IEcoCalculatorXPtr, const UGUID*, voidptr_t*);
-    uint32_t (ECOCALLMETHOD *AddRef)(IEcoCalculatorXPtr);
-    uint32_t (ECOCALLMETHOD *Release)(IEcoCalculatorXPtr);
-    double (ECOCALLMETHOD *Addition)(IEcoCalculatorXPtr, double, double);
-    double (ECOCALLMETHOD *Subtraction)(IEcoCalculatorXPtr, double, double);
-} IEcoCalculatorXVTbl;
-struct IEcoCalculatorX { IEcoCalculatorXVTbl* pVTbl; };
-#endif
+
+    /* IEcoUnknown */
+    int16_t (ECOCALLMETHOD *QueryInterface)(/* in */ IEcoCalculatorXPtr_t me, /* in */ const UGUID* riid, /* out */ voidptr_t* ppv);
+    uint32_t (ECOCALLMETHOD *AddRef)(/* in */ IEcoCalculatorXPtr_t me);
+    uint32_t (ECOCALLMETHOD *Release)(/* in */ IEcoCalculatorXPtr_t me);
+
+    /* IEcoCalculatorX */
+    int32_t (ECOCALLMETHOD *Addition)(/* in */ IEcoCalculatorXPtr_t me, /* in */ int16_t a, /* in */ int16_t b);
+    int16_t (ECOCALLMETHOD *Subtraction)(/* in */ IEcoCalculatorXPtr_t me, /* in */ int16_t a, /* in */ int16_t b);
+
+} IEcoCalculatorXVTbl, *IEcoCalculatorXVTblPtr;
+
+interface IEcoCalculatorX {
+    struct IEcoCalculatorXVTbl *pVTbl;
+} IEcoCalculatorX;
+
+typedef IEcoCalculatorXPtr_t IEcoCalculatorXPtr;
+#endif /* __I_ECO_CALCULATOR_X_H__ */

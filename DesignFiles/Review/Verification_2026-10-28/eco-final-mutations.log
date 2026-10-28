@@ -1,0 +1,6 @@
+ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework" python3 DesignFiles/Reference/test_build_validation.py
+BUILD DEPENDENCY MUTATIONS PASSED: headers, SharedFiles, CFLAGS, invalid Framework
+NO-LIBC NEGATIVE MUTATION PASSED: abort() detected through nm
+UNITTEST NEGATIVE MUTATION PASSED: incorrect real operation produces nonzero exit
+HORNER DEPENDENCY MUTATION PASSED: A.Addition changes the public result
+HORNER DEPENDENCY MUTATION PASSED: D.Multiplication changes the public result

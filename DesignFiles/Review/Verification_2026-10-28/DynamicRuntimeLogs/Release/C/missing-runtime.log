@@ -1,0 +1,10 @@
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: QueryComponent returns a real component (line 31)
+FAIL: Lab2 root (line 114)
+FAIL: all seven CID scenarios executed (line 184)
+Public client C: checks=9 failures=9

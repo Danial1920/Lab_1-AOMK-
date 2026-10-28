@@ -1,5 +1,4 @@
-/* Lab2 aggregates Lab1 through its nondelegating unknown and includes E.
- * Its Y facade keeps the external identity while forwarding calls to E. */
+/* Lab2 aggregates Lab1 (which aggregates B) and includes A and D for Horner. */
 #include "CEcoLab2.h"
 #include "polyfit_component.h"
 #include "polyfit_bus.h"
@@ -26,8 +25,10 @@ static void lab2_destroy(CEcoLab2Component* component) {
     /* Private Release does not re-enter the dying controlling unknown. */
     if (component->lab1_inner != 0)
         component->lab1_inner->pVTbl->Release(component->lab1_inner);
-    if (component->included_e != 0)
-        component->included_e->pVTbl->Release(component->included_e);
+    if (component->included_a != 0)
+        component->included_a->pVTbl->Release(component->included_a);
+    if (component->included_d != 0)
+        component->included_d->pVTbl->Release(component->included_d);
     if (component->system != 0) component->system->pVTbl->Release(component->system);
     memory->pVTbl->Free(memory, component);
     memory->pVTbl->Release(memory);
@@ -42,13 +43,10 @@ static int16_t ECOCALLMETHOD lab2_qi(IEcoLab2Ptr me, const UGUID* riid,
     if (guid_equal(riid, &IID_IEcoLab2) || guid_equal(riid, &IID_IEcoUnknown)) {
         ++component->references; *ppv = me; return ERR_ECO_SUCCESS;
     }
-    if (guid_equal(riid, &IID_IEcoCalculatorY)) {
-        ++component->references; *ppv = &component->calculator_y.iface;
-        return ERR_ECO_SUCCESS;
-    }
     if (component->lab1_inner != 0 &&
         (guid_equal(riid, &IID_IEcoLab1) || guid_equal(riid, &IID_IEcoPolynomialMath) ||
-         guid_equal(riid, &IID_IEcoCalculatorX)))
+         guid_equal(riid, &IID_IEcoCalculatorX) || guid_equal(riid, &IID_IEcoCalculatorY) ||
+         guid_equal(riid, &IID_IEcoCalculatorSafe)))
         return component->lab1_inner->pVTbl->QueryInterface(component->lab1_inner, riid, ppv);
     return ERR_ECO_NOINTERFACE;
 }
@@ -67,47 +65,25 @@ static uint32_t ECOCALLMETHOD lab2_release(IEcoLab2Ptr me) {
     if (references == 0u) lab2_destroy(component);
     return references;
 }
-static IEcoLab2VTbl lab2_vtbl = {lab2_qi, lab2_add_ref, lab2_release};
-static int16_t ECOCALLMETHOD lab2_y_qi(IEcoCalculatorYPtr me,
-    const UGUID* riid, voidptr_t* ppv) {
-    if (ppv == 0) return ERR_ECO_POINTER;
-    *ppv = 0;
-    if (me == 0 || riid == 0) return ERR_ECO_POINTER;
-    return lab2_qi(&((CEcoLab2YView*)me)->owner->lab2, riid, ppv);
-}
-static uint32_t ECOCALLMETHOD lab2_y_add_ref(IEcoCalculatorYPtr me) {
-    if (me == 0) return 0u;
-    return lab2_add_ref(&((CEcoLab2YView*)me)->owner->lab2);
-}
-static uint32_t ECOCALLMETHOD lab2_y_release(IEcoCalculatorYPtr me) {
-    if (me == 0) return 0u;
-    return lab2_release(&((CEcoLab2YView*)me)->owner->lab2);
-}
-static double ECOCALLMETHOD lab2_multiply(IEcoCalculatorYPtr me, double a, double b) {
-    IEcoCalculatorY* child;
-    if (me == 0) return 0.0;
-    child = ((CEcoLab2YView*)me)->owner->included_e;
-    return child->pVTbl->Multiplication(child, a, b);
-}
-static double ECOCALLMETHOD lab2_divide(IEcoCalculatorYPtr me, double a, double b) {
-    IEcoCalculatorY* child;
-    if (me == 0) return 0.0;
-    child = ((CEcoLab2YView*)me)->owner->included_e;
-    return child->pVTbl->Division(child, a, b);
-}
-static int16_t ECOCALLMETHOD lab2_try_divide(IEcoCalculatorYPtr me,
-    double a, double b, double* result) {
-    IEcoCalculatorY* child;
+static int16_t ECOCALLMETHOD lab2_horner(IEcoLab2Ptr me, const int16_t* coefficients,
+    uint32_t count, int16_t x, int32_t* result) {
+    CEcoLab2Component* component; uint32_t i; int32_t value, product;
     if (result == 0) return ERR_ECO_POINTER;
-    *result = 0.0;
-    if (me == 0) return ERR_ECO_POINTER;
-    child = ((CEcoLab2YView*)me)->owner->included_e;
-    return child->pVTbl->TryDivision(child, a, b, result);
+    *result = 0;
+    if (me == 0 || coefficients == 0) return ERR_ECO_POINTER;
+    if (count == 0u || count > 0xFFFFFFFFu / sizeof(int16_t)) return ERR_ECO_INVALIDARG;
+    component = (CEcoLab2Component*)me;
+    value = coefficients[0];
+    for (i = 1u; i < count; ++i) {
+        if (value < -32768L || value > 32767L) return ERR_ECO_CALCULATOR_OVERFLOW;
+        product = component->included_d->pVTbl->Multiplication(component->included_d, (int16_t)value, x);
+        if (product < -32768L || product > 32767L) return ERR_ECO_CALCULATOR_OVERFLOW;
+        value = component->included_a->pVTbl->Addition(component->included_a, (int16_t)product, coefficients[i]);
+    }
+    *result = value;
+    return ERR_ECO_SUCCESS;
 }
-static IEcoCalculatorYVTbl lab2_y_vtbl = {
-    lab2_y_qi, lab2_y_add_ref, lab2_y_release,
-    lab2_multiply, lab2_divide, lab2_try_divide
-};
+static IEcoLab2VTbl lab2_vtbl = {lab2_qi, lab2_add_ref, lab2_release, lab2_horner};
 static int16_t EcoLab2_Create(IEcoUnknown* system, IEcoMemoryAllocator1* memory,
     CEcoLab2Component** result) {
     CEcoLab2Component* component; IEcoInterfaceBus1* bus; int16_t status;
@@ -118,11 +94,9 @@ static int16_t EcoLab2_Create(IEcoUnknown* system, IEcoMemoryAllocator1* memory,
         (uint32_t)sizeof(CEcoLab2Component));
     if (component == 0) return ERR_ECO_OUTOFMEMORY;
     component->lab2.pVTbl = &lab2_vtbl;
-    component->calculator_y.iface.pVTbl = &lab2_y_vtbl;
-    component->calculator_y.owner = component;
     component->references = 1u;
     component->memory = memory; memory->pVTbl->AddRef(memory);
-    component->system = 0; component->lab1_inner = 0; component->included_e = 0;
+    component->system = 0; component->lab1_inner = 0; component->included_a = 0; component->included_d = 0;
     bus = 0;
     status = system->pVTbl->QueryInterface(system, &GID_IEcoSystem,
         (voidptr_t*)&component->system);
@@ -138,8 +112,11 @@ static int16_t EcoLab2_Create(IEcoUnknown* system, IEcoMemoryAllocator1* memory,
         (IEcoUnknown*)&component->lab2, &IID_IEcoUnknown,
         (voidptr_t*)&component->lab1_inner);
     if (status == ERR_ECO_SUCCESS)
-        status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorE, 0,
-            &IID_IEcoCalculatorY, (voidptr_t*)&component->included_e);
+        status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorA, 0,
+            &IID_IEcoCalculatorX, (voidptr_t*)&component->included_a);
+    if (status == ERR_ECO_SUCCESS)
+        status = bus->pVTbl->QueryComponent(bus, &CID_EcoCalculatorD, 0,
+            &IID_IEcoCalculatorY, (voidptr_t*)&component->included_d);
     bus->pVTbl->Release(bus);
     if (status != ERR_ECO_SUCCESS) { lab2_destroy(component); return status; }
     *result = component;
@@ -193,7 +170,7 @@ static int16_t ECOCALLMETHOD factory_init(IEcoComponentFactoryPtr_t me,
     if (me == 0) return ERR_ECO_POINTER; (void)system; (void)data; return ERR_ECO_SUCCESS;
 }
 static char_t* ECOCALLMETHOD factory_name(IEcoComponentFactoryPtr_t me) { if (me == 0) return ""; return "EcoLab2"; }
-static char_t* ECOCALLMETHOD factory_version(IEcoComponentFactoryPtr_t me) { if (me == 0) return ""; return "1.0.0"; }
+static char_t* ECOCALLMETHOD factory_version(IEcoComponentFactoryPtr_t me) { if (me == 0) return ""; return "2.0.0"; }
 static char_t* ECOCALLMETHOD factory_manufacturer(IEcoComponentFactoryPtr_t me) { if (me == 0) return ""; return "Laboratory 2"; }
 static IEcoComponentFactoryVTbl factory_vtbl = {factory_qi, factory_add_ref,
     factory_release, factory_alloc, factory_init, factory_name,
@@ -201,27 +178,11 @@ static IEcoComponentFactoryVTbl factory_vtbl = {factory_qi, factory_add_ref,
 static CEcoLab2Factory lab2_factory = {{&factory_vtbl},1u};
 IEcoComponentFactory* GetEcoLab2Factory(void) { return &lab2_factory.factory; }
 
-int16_t EcoLab2_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus) {
-    int16_t status;
-    if (bus == 0) return ERR_ECO_POINTER;
-    status = PolyfitComponent_RegisterOnBus(bus);
-    if (status != ERR_ECO_SUCCESS) return status;
-    status = CalculatorComponents_RegisterOnBus(bus);
-    if (status != ERR_ECO_SUCCESS) {
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
-        return status;
-    }
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoLab2,
-        (IEcoUnknownPtr_t)GetEcoLab2Factory());
-    if (status != ERR_ECO_SUCCESS) {
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorE);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorD);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorC);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorB);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorA);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
-    }
-    return status;
+#if defined(ECO_DLL) && defined(ECO_LAB2_ONLY)
+#ifdef GetIEcoComponentFactoryPtr
+#undef GetIEcoComponentFactoryPtr
+#endif
+ECO_EXPORT IEcoComponentFactory* ECOCALLMETHOD GetIEcoComponentFactoryPtr(void) {
+    return GetEcoLab2Factory();
 }
+#endif

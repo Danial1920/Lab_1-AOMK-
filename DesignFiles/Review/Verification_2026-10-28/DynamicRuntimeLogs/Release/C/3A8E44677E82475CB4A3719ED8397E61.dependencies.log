@@ -1,0 +1,7 @@
+/Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Release/C/3A8E44677E82475CB4A3719ED8397E61.dylib (architecture x86_64):
+	/usr/local/lib/3A8E44677E82475CB4A3719ED8397E61.dylib (compatibility version 1.0.0, current version 1.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1356.0.0)
+/Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Release/C/3A8E44677E82475CB4A3719ED8397E61.dylib (architecture arm64):
+	/usr/local/lib/3A8E44677E82475CB4A3719ED8397E61.dylib (compatibility version 1.0.0, current version 1.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1356.0.0)
+DYNAMIC CHECK PASSED: every Mach-O architecture, symbols and dependencies

@@ -1,0 +1,51 @@
+Unit-тест компонента EcoLab2: агрегирование Eco.Lab1 и включение калькуляторов A и D
+
+1. IEcoLab2::Horner: умножение через включенный D, сложение через включенный A
+p(x) = 2x^3 - 3x^2 + 5
+     x       Horner напрямую
+    -3          -76          -76
+    -2          -23          -23
+    -1            0            0
+     0            5            5
+     1            4            4
+     2            9            9
+     3           32           32
+     4           85           85
+[OK] значения многочлена совпадают с прямым вычислением
+[OK] корень x^2 - 1 в точке 1 дает 0
+[OK] переполнение int16 в промежуточном результате -> ERR_ECO_FAIL
+[OK] n = 0 -> ERR_ECO_INVALIDARG
+[OK] coeffs = NULL -> ERR_ECO_POINTER
+
+2. Eco.Lab1 агрегирован в Eco.Lab2: его интерфейсы отдаются клиенту напрямую
+[OK] QueryInterface(IID_IEcoAdvancedMath) у Eco.Lab2
+Solve (Рунге-Кутта 4) через Eco.Lab2: x(10) = -0.839071529524, cos(10) = -0.839071529076
+[OK] метод Рунге-Кутты работает через агрегированный Eco.Lab1
+[OK] QueryInterface(IID_IEcoCalculatorX): X компонента B через два уровня агрегирования
+[OK] QueryInterface(IID_IEcoCalculatorY): Y из Eco.Lab1 (включен E)
+  Addition(3, 5) = 8, Subtraction(3, 5) = -2, Multiplication(6, 7) = 42, Division(20, 3) = 6
+[OK] арифметика через Eco.Lab2
+
+3. Правила QueryInterface для четырех интерфейсов Eco.Lab2
+IEcoUnknown через IEcoLab2 0x11d605e00, Math 0x11d605e00, X 0x11d605e00, Y 0x11d605e00
+[OK] 1. один и тот же IEcoUnknown у всех интерфейсов, включая интерфейс B
+[OK] из X компонента B получается IEcoLab2 внешнего компонента
+[OK] 4. можно вернуться туда, откуда начали (Math -> X -> Y -> Math)
+[OK] неподдерживаемый интерфейс: ERR_ECO_NOINTERFACE
+
+4. Подсчет ссылок: интерфейсы агрегированных компонентов увеличивают счетчик Eco.Lab2
+AddRef: IEcoLab2 2, X (компонент B) 3, IEcoAdvancedMath (Eco.Lab1) 5
+[OK] один общий счетчик на Eco.Lab2, Eco.Lab1 и B
+[OK] после Release счетчик вернулся к исходному
+
+5. Компонент с CID_EcoCalculatorA: A или C
+[OK] по CID_EcoCalculatorA получен IEcoCalculatorX
+подключен компонент A: есть только X
+[OK] компонент A: Y не поддерживается, ERR_ECO_NOINTERFACE
+[OK] сложение через этот компонент
+[OK] Eco.Lab2 работает без изменений: (x + 1)^2 при x = 4 равно 25
+
+Итого: пройдено 20, провалено 0
+Release последней ссылки на Eco.Lab2: 0
+
+EXIT: 0

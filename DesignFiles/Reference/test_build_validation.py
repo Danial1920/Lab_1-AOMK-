@@ -40,16 +40,38 @@ def main():
         run('make','ECO_FRAMEWORK=/nonexistent-eco-framework','eco-build', success=False)
         print('BUILD DEPENDENCY MUTATIONS PASSED: headers, SharedFiles, CFLAGS, invalid Framework')
         source = temporary/'SourceFiles/polyfit_bus.c'
-        source.write_bytes(source.read_bytes()+b'\nextern void abort(void);\nvoid validation_libc_probe(void) { abort(); }\n')
+        original_source = source.read_bytes()
+        run('sh', 'DesignFiles/Report/check_no_libc.sh')
+        # An unused standard header adds no undefined symbol: only the source
+        # scanner can catch this mutation. Keep that check independent of nm.
+        source.write_bytes(original_source + b'\n#include <stdlib.h>\n')
+        output = run('sh', 'DesignFiles/Report/check_no_libc.sh', success=False)
+        assert 'forbidden source dependency' in output and 'stdlib.h' in output, output
+        print('NO-LIBC SOURCE MUTATION PASSED: unused forbidden header detected')
+        source.write_bytes(original_source+b'\nextern void abort(void);\nvoid validation_libc_probe(void) { abort(); }\n')
         output = run('sh','DesignFiles/Report/check_no_libc.sh', success=False)
         assert 'unexpected external symbols' in output and '_abort' in output, output
         print('NO-LIBC NEGATIVE MUTATION PASSED: abort() detected through nm')
         source = temporary/'SourceFiles/CalculatorComponents.c'
         text = source.read_text(encoding='utf-8-sig')
-        assert 'return a + b;' in text
-        source.write_text(text.replace('return a + b;','return a + b + 1.0;',1), encoding='utf-8-sig')
+        assert 'return (int32_t)a + (int32_t)b;' in text
+        source.write_text(text.replace('return (int32_t)a + (int32_t)b;','return (int32_t)a + (int32_t)b + 1;',1), encoding='utf-8-sig')
         output = run('make','ECO_FRAMEWORK='+framework,'eco-test', success=False)
         assert 'FAIL ' in output, output
         print('UNITTEST NEGATIVE MUTATION PASSED: incorrect real operation produces nonzero exit')
+        # Mutate only A, then only D. The public Horner client must observe
+        # both changes through real included interfaces, not local arithmetic.
+        mutations = (
+            ('A.Addition', 'return (int32_t)a + (int32_t)b;',
+             'return (int32_t)a + (int32_t)b + (component->kind == CALCULATOR_A ? 1L : 0L);'),
+            ('D.Multiplication', 'return (int32_t)a * (int32_t)b;',
+             'return (int32_t)a * (int32_t)b + (((CCalculatorYView*)me)->owner->kind == CALCULATOR_D ? 1L : 0L);'),
+        )
+        for label, original, replacement in mutations:
+            assert original in text
+            source.write_text(text.replace(original, replacement, 1), encoding='utf-8-sig')
+            output = run('make', 'ECO_FRAMEWORK='+framework, 'component-clients', success=False)
+            assert 'FAIL: Horner via included A/C and D' in output, output
+            print('HORNER DEPENDENCY MUTATION PASSED: ' + label + ' changes the public result')
 
 if __name__ == '__main__': main()

@@ -1,0 +1,9 @@
+A: official X, QI matrix and identity checked
+B: official X, QI matrix and identity checked
+D includes B: official X/Y, QI matrix and identity checked
+E aggregates B: official X/Y, QI matrix and identity checked
+Lab1: official X/Y, QI matrix and identity checked
+Lab1 QR: official X/Y, QI matrix and identity checked
+Lab2: official X/Y, QI matrix and identity checked
+Lab2: Horner through included A/C+D; Lab2 -> Lab1 -> B lifetime checked
+Public client A: checks=523 failures=0

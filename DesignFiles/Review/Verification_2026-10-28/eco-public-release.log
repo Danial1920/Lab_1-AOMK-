@@ -1,0 +1,21 @@
+ECO_FRAMEWORK="/Users/danial2006/Downloads/Eco.Framework" python3 DesignFiles/Report/build_component_clients.py
+A: official X, QI matrix and identity checked
+B: official X, QI matrix and identity checked
+D includes B: official X/Y, QI matrix and identity checked
+E aggregates B: official X/Y, QI matrix and identity checked
+Lab1: official X/Y, QI matrix and identity checked
+Lab1 QR: official X/Y, QI matrix and identity checked
+Lab2: official X/Y, QI matrix and identity checked
+Lab2: Horner through included A/C+D; Lab2 -> Lab1 -> B lifetime checked
+Public client A: checks=523 failures=0
+C replacing A (same CID): official X/Y, QI matrix and identity checked
+B: official X, QI matrix and identity checked
+D includes B: official X/Y, QI matrix and identity checked
+E aggregates B: official X/Y, QI matrix and identity checked
+Lab1: official X/Y, QI matrix and identity checked
+Lab1 QR: official X/Y, QI matrix and identity checked
+Lab2: official X/Y, QI matrix and identity checked
+Lab2: Horner through included A/C+D; Lab2 -> Lab1 -> B lifetime checked
+Public client C: checks=559 failures=0
+Same client object SHA256: ca085747cd05e7f75e3b192c58690b8d18ea6b91b817d62d14ef576c51961941
+Independent archives and A/C substitution PASSED: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/Components/Release

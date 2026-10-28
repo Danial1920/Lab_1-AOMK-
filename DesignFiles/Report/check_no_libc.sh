@@ -4,7 +4,7 @@ ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 OUT=${ECO_NO_LIBC_BUILD:-"$ROOT/BuildFiles/NoLibc"}
 mkdir -p "$OUT"
 command -v nm >/dev/null 2>&1 || { echo "NO LIBC CHECK FAILED: nm unavailable" >&2; exit 2; }
-command -v rg >/dev/null 2>&1 || { echo "NO LIBC CHECK FAILED: rg unavailable" >&2; exit 2; }
+command -v python3 >/dev/null 2>&1 || { echo "NO LIBC CHECK FAILED: python3 unavailable" >&2; exit 2; }
 # Compile both optimizer branches: compiler-emitted calls matter as much as
 # direct source calls. Link the component objects together before checking
 # undefined symbols, so only genuine external dependencies remain.
@@ -36,8 +36,28 @@ if external:
 print('External component symbols: none')
 PY
 done
-if rg -n '#[[:space:]]*include[[:space:]]*[<"](stdio|stdlib|math|string|memory)\.h|\b(malloc|calloc|realloc|free|memcpy|memmove|memset|memcmp|printf|puts|scanf|abort|exit|fabs|sqrt|pow)[[:space:]]*\(' "$ROOT/SourceFiles" "$ROOT/HeaderFiles" "$ROOT/SharedFiles"; then
-  echo "NO LIBC CHECK FAILED: forbidden source dependency" >&2
-  exit 1
-fi
+# Python is already required for the symbol audit above. Use its standard
+# library for source scanning too, so a normal terminal need not install rg.
+python3 - "$ROOT" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+pattern = re.compile(
+    r'#[\s]*include[\s]*[<"](stdio|stdlib|math|string|memory)\.h'
+    r'|\b(malloc|calloc|realloc|free|memcpy|memmove|memset|memcmp|printf|puts|scanf|abort|exit|fabs|sqrt|pow)\s*\('
+)
+found = False
+for directory in ('SourceFiles', 'HeaderFiles', 'SharedFiles'):
+    for path in sorted((root / directory).rglob('*')):
+        if not path.is_file() or path.suffix not in ('.c', '.h', '.idl'):
+            continue
+        for number, line in enumerate(path.read_text(encoding='utf-8-sig').splitlines(), 1):
+            if pattern.search(line):
+                print('{}:{}:{}'.format(path, number, line))
+                found = True
+if found:
+    raise SystemExit('NO LIBC CHECK FAILED: forbidden source dependency')
+PY
 echo "NO LIBC CHECK PASSED: source + external symbols at O0/O2"

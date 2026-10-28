@@ -1,0 +1,296 @@
+{
+  "repository": "https://github.com/Zzzpize/EcoLab1",
+  "commit": "57d07171c5c92b492ac3f1fd48b93ce2155dd67c",
+  "local_commit": "4c8568874a051fa669d5a0d7e743d3f70243ddcb",
+  "date": "2026-10-28",
+  "files": [
+    {
+      "path": "Eco.CalculatorA/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "74b7f6ddf8ec2625ee1bfa3b6e0910edec7e4b60"
+    },
+    {
+      "path": "Eco.CalculatorA/HeaderFiles/CEcoCalculatorA.h",
+      "git_blob": "ae43fcf9eb083daf6434fc6fcedb7da28961e8ed"
+    },
+    {
+      "path": "Eco.CalculatorA/HeaderFiles/CEcoCalculatorAFactory.h",
+      "git_blob": "d7e208b35da684f594539d20ca78e7c1d86da533"
+    },
+    {
+      "path": "Eco.CalculatorA/SharedFiles/IEcoCalculatorX.h",
+      "git_blob": "b7e47d0ed2a748775be1345d7125d843a17f8040"
+    },
+    {
+      "path": "Eco.CalculatorA/SharedFiles/IdEcoCalculatorA.h",
+      "git_blob": "0dba9bf1a5351661a38622ddf1ccb32d3e890e9d"
+    },
+    {
+      "path": "Eco.CalculatorA/SourceFiles/CEcoCalculatorA.c",
+      "git_blob": "b12b8ba19765c7cdc59c2d00a5f491e55374bde4"
+    },
+    {
+      "path": "Eco.CalculatorA/SourceFiles/CEcoCalculatorAFactory.c",
+      "git_blob": "c8a67b6c0802c7e1525075239533a6d0a166e772"
+    },
+    {
+      "path": "Eco.CalculatorB/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "7ff3ef2b29f92589ca492b902c43ad8a73e56e2e"
+    },
+    {
+      "path": "Eco.CalculatorB/HeaderFiles/CEcoCalculatorB.h",
+      "git_blob": "f0cbac09ebd890dce4ffcf0cbddb310256c00c1e"
+    },
+    {
+      "path": "Eco.CalculatorB/HeaderFiles/CEcoCalculatorBFactory.h",
+      "git_blob": "4206f4db6a39949a32337cf89d819b1970af669e"
+    },
+    {
+      "path": "Eco.CalculatorB/SharedFiles/IEcoCalculatorX.h",
+      "git_blob": "b7e47d0ed2a748775be1345d7125d843a17f8040"
+    },
+    {
+      "path": "Eco.CalculatorB/SharedFiles/IdEcoCalculatorB.h",
+      "git_blob": "1c7e4d4627585f4d38d5d21284195eecc4961ed8"
+    },
+    {
+      "path": "Eco.CalculatorB/SourceFiles/CEcoCalculatorB.c",
+      "git_blob": "e01a44c285ae421f4aa6239ddbdd1055d2215582"
+    },
+    {
+      "path": "Eco.CalculatorB/SourceFiles/CEcoCalculatorBFactory.c",
+      "git_blob": "c8c25b357577cf0a23c7d23d53a5b5e2cddb1770"
+    },
+    {
+      "path": "Eco.CalculatorC/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "5896299c110e7bd33548424c2d3e8c49dd8b7633"
+    },
+    {
+      "path": "Eco.CalculatorC/HeaderFiles/CEcoCalculatorC.h",
+      "git_blob": "72a67d3710497399ebefc478a7f12c4a0a6625e5"
+    },
+    {
+      "path": "Eco.CalculatorC/HeaderFiles/CEcoCalculatorCFactory.h",
+      "git_blob": "55e389801fb9d835b27ad62d91a6322e63e35c2e"
+    },
+    {
+      "path": "Eco.CalculatorC/SharedFiles/IEcoCalculatorX.h",
+      "git_blob": "b7e47d0ed2a748775be1345d7125d843a17f8040"
+    },
+    {
+      "path": "Eco.CalculatorC/SharedFiles/IEcoCalculatorY.h",
+      "git_blob": "13e8c98cde9a8b3c219329716e08119c8611892e"
+    },
+    {
+      "path": "Eco.CalculatorC/SharedFiles/IdEcoCalculatorC.h",
+      "git_blob": "e5a540514215850e569108419b64ec50b8eea210"
+    },
+    {
+      "path": "Eco.CalculatorC/SourceFiles/CEcoCalculatorC.c",
+      "git_blob": "6e229fef067f31029b0a1ec811492d0af4ee0875"
+    },
+    {
+      "path": "Eco.CalculatorC/SourceFiles/CEcoCalculatorCFactory.c",
+      "git_blob": "58d3f8e829a527bd280ead0099ac8ec61d3e21ba"
+    },
+    {
+      "path": "Eco.CalculatorD/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "d11556165e386e6ee82b3826a649ee1f65ce74a5"
+    },
+    {
+      "path": "Eco.CalculatorD/HeaderFiles/CEcoCalculatorD.h",
+      "git_blob": "a51a07839739df1d4417da383ec5358dbff7157d"
+    },
+    {
+      "path": "Eco.CalculatorD/HeaderFiles/CEcoCalculatorDFactory.h",
+      "git_blob": "d7fdb2f870ae8f26266bcb5524668adf2e17383a"
+    },
+    {
+      "path": "Eco.CalculatorD/SharedFiles/IEcoCalculatorY.h",
+      "git_blob": "13e8c98cde9a8b3c219329716e08119c8611892e"
+    },
+    {
+      "path": "Eco.CalculatorD/SharedFiles/IdEcoCalculatorD.h",
+      "git_blob": "5559f68296ad47e0a29e3522d91383cd0f00d53a"
+    },
+    {
+      "path": "Eco.CalculatorD/SourceFiles/CEcoCalculatorD.c",
+      "git_blob": "ecb93f258568c65d72e08e73e3966b50f3c094ac"
+    },
+    {
+      "path": "Eco.CalculatorD/SourceFiles/CEcoCalculatorDFactory.c",
+      "git_blob": "731998d46f0ab7b4044e332cbd9686dc08839653"
+    },
+    {
+      "path": "Eco.CalculatorE/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "295c86e0ce8ac426b1c71f5417193b21c44c853d"
+    },
+    {
+      "path": "Eco.CalculatorE/HeaderFiles/CEcoCalculatorE.h",
+      "git_blob": "d918fec9ad35097e4971cda993a2ede40785f2e0"
+    },
+    {
+      "path": "Eco.CalculatorE/HeaderFiles/CEcoCalculatorEFactory.h",
+      "git_blob": "4e4c836b4e079c448f6e10f793a2e33670cbf201"
+    },
+    {
+      "path": "Eco.CalculatorE/SharedFiles/IEcoCalculatorY.h",
+      "git_blob": "13e8c98cde9a8b3c219329716e08119c8611892e"
+    },
+    {
+      "path": "Eco.CalculatorE/SharedFiles/IdEcoCalculatorE.h",
+      "git_blob": "2ea643eeee5990f3e7411f2c7bc605d762ad46d0"
+    },
+    {
+      "path": "Eco.CalculatorE/SourceFiles/CEcoCalculatorE.c",
+      "git_blob": "aac8747764fd84ee9d8d9abdd73314c9c4632c66"
+    },
+    {
+      "path": "Eco.CalculatorE/SourceFiles/CEcoCalculatorEFactory.c",
+      "git_blob": "b049a293b147e1bd39c17397dc231d213e450202"
+    },
+    {
+      "path": "Eco.Lab1/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "4448c938f3b9584a3209f30dc10138eae0be1d38"
+    },
+    {
+      "path": "Eco.Lab1/AssemblyFiles/Linux/gcc_v132/MakefileExe",
+      "git_blob": "5e246add30dbcb8f763902a7217a77483596ac80"
+    },
+    {
+      "path": "Eco.Lab1/HeaderFiles/CEcoLab1.h",
+      "git_blob": "f09c74222edd5cd07f090da030985d18159e4cda"
+    },
+    {
+      "path": "Eco.Lab1/HeaderFiles/CEcoLab1Factory.h",
+      "git_blob": "b14482603bebeab23587ec104e613c84e393cc5c"
+    },
+    {
+      "path": "Eco.Lab1/README.md",
+      "git_blob": "a5961cb182a957ad9407e04b886da564a8b34136"
+    },
+    {
+      "path": "Eco.Lab1/SharedFiles/ErrEcoLab1.h",
+      "git_blob": "e27491c05bb10fed318515678e28ea753ebe12d5"
+    },
+    {
+      "path": "Eco.Lab1/SharedFiles/IEcoAdvancedMath.h",
+      "git_blob": "1e28ec6e8d58a3e1317dfe327b6e8c281fff885e"
+    },
+    {
+      "path": "Eco.Lab1/SharedFiles/IEcoCalculatorX.h",
+      "git_blob": "b7e47d0ed2a748775be1345d7125d843a17f8040"
+    },
+    {
+      "path": "Eco.Lab1/SharedFiles/IEcoCalculatorY.h",
+      "git_blob": "13e8c98cde9a8b3c219329716e08119c8611892e"
+    },
+    {
+      "path": "Eco.Lab1/SharedFiles/IdEcoLab1.h",
+      "git_blob": "2a63376ef172b45ae464789abb4e4d9d2051e91f"
+    },
+    {
+      "path": "Eco.Lab1/SourceFiles/CEcoLab1.c",
+      "git_blob": "6027e17360910deb73196e67d9b4eef22a019d26"
+    },
+    {
+      "path": "Eco.Lab1/SourceFiles/CEcoLab1Factory.c",
+      "git_blob": "466cca570182f0c0146ac4c43c676213dd02f00a"
+    },
+    {
+      "path": "Eco.Lab1/UnitTestFiles/SourceFiles/EcoLab1.c",
+      "git_blob": "85311bc84a18201f8d70ab7caa4239ab045946c4"
+    },
+    {
+      "path": "Eco.Lab1DP/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "124c39d44bbbff93d2336006bbc75a9742319c52"
+    },
+    {
+      "path": "Eco.Lab1DP/AssemblyFiles/Linux/gcc_v132/MakefileExe",
+      "git_blob": "29b44abec481a038ac6a80581e0573f13d7ef4a7"
+    },
+    {
+      "path": "Eco.Lab1DP/HeaderFiles/CEcoLab1DP.h",
+      "git_blob": "d037d416676eb4a034bf506ff651b3b667eb132f"
+    },
+    {
+      "path": "Eco.Lab1DP/HeaderFiles/CEcoLab1DPFactory.h",
+      "git_blob": "e4ef9576a8ff3b1f52d52fe21ad062444e7b8d60"
+    },
+    {
+      "path": "Eco.Lab1DP/README.md",
+      "git_blob": "a5961cb182a957ad9407e04b886da564a8b34136"
+    },
+    {
+      "path": "Eco.Lab1DP/SharedFiles/ErrEcoLab1DP.h",
+      "git_blob": "dad9703fbb46ec1239750f91a59fd5cac0cfd70c"
+    },
+    {
+      "path": "Eco.Lab1DP/SharedFiles/IEcoAdvancedMath.h",
+      "git_blob": "1e28ec6e8d58a3e1317dfe327b6e8c281fff885e"
+    },
+    {
+      "path": "Eco.Lab1DP/SharedFiles/IdEcoLab1DP.h",
+      "git_blob": "970f8aa535cf8d08dec18626ceea661126f00747"
+    },
+    {
+      "path": "Eco.Lab1DP/SourceFiles/CEcoLab1DP.c",
+      "git_blob": "1b03771faa2e8d6cdb8d0e2f6b3502b0d4f7e6e8"
+    },
+    {
+      "path": "Eco.Lab1DP/SourceFiles/CEcoLab1DPFactory.c",
+      "git_blob": "bc207d19a00c50b3a4581c08307bd632c20fee19"
+    },
+    {
+      "path": "Eco.Lab1DP/UnitTestFiles/SourceFiles/EcoLab1DP.c",
+      "git_blob": "19d07c333eb0c6273a02c5cc40e0bd93da9f8fd7"
+    },
+    {
+      "path": "Eco.Lab2/AssemblyFiles/Linux/gcc_v132/Makefile",
+      "git_blob": "f0a869526e2b4815503fef711f51ca2a1efb19ce"
+    },
+    {
+      "path": "Eco.Lab2/AssemblyFiles/Linux/gcc_v132/MakefileExe",
+      "git_blob": "70f924661e3f47747bb0100fcd46d2f6cfdd1e9f"
+    },
+    {
+      "path": "Eco.Lab2/HeaderFiles/CEcoLab2.h",
+      "git_blob": "f651a52f473fb1d0ad072f1b8ae4e95a10a2bf50"
+    },
+    {
+      "path": "Eco.Lab2/HeaderFiles/CEcoLab2Factory.h",
+      "git_blob": "cc4b1ea71aa21ea0eccd51ce68080d1853f1c5f5"
+    },
+    {
+      "path": "Eco.Lab2/README.md",
+      "git_blob": "a5961cb182a957ad9407e04b886da564a8b34136"
+    },
+    {
+      "path": "Eco.Lab2/SharedFiles/ErrEcoLab2.h",
+      "git_blob": "c6c2637cc078d17af977365cbe3bb09d960780c3"
+    },
+    {
+      "path": "Eco.Lab2/SharedFiles/IEcoLab2.h",
+      "git_blob": "dd15ea75e5cc3c15249743e956c56594305611f0"
+    },
+    {
+      "path": "Eco.Lab2/SharedFiles/IdEcoLab2.h",
+      "git_blob": "e3eee597ccc91c5580d763d0cbba204be83b42ca"
+    },
+    {
+      "path": "Eco.Lab2/SourceFiles/CEcoLab2.c",
+      "git_blob": "ffd8849d8f6e7d96bc1a203aca2c0198183875cf"
+    },
+    {
+      "path": "Eco.Lab2/SourceFiles/CEcoLab2Factory.c",
+      "git_blob": "fd8899c7184e4279ae94a720b3b15d8d88c7fe17"
+    },
+    {
+      "path": "Eco.Lab2/UnitTestFiles/SourceFiles/EcoLab2.c",
+      "git_blob": "e6f8fe3a381f9dbdf2d65a7ac36e62260ad700ec"
+    },
+    {
+      "path": "README.md",
+      "git_blob": "44a87efdff7df32ae1865e10bf606d6f01b64772"
+    }
+  ]
+}

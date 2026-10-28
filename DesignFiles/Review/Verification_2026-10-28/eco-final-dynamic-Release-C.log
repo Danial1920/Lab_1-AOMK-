@@ -1,0 +1,19 @@
+Building Release D3B3E2F18D214A6B9A40440000000045
+Building Release D3B3E2F18D214A6B9A40440000000046
+Building Release 4828F6552E4540E78121EBD220DC360E
+Building Release AE202E543CE54550899603BD70C62565
+Building Release 3A8E44677E82475CB4A3719ED8397E61
+Building Release 872FEF1DE3314B87AD44D1E7C232C2F0
+Building Release D3B3E2F18D214A6B9A40440000000065
+C replacing A (same CID): official X/Y, QI matrix and identity checked
+B: official X, QI matrix and identity checked
+D includes B: official X/Y, QI matrix and identity checked
+E aggregates B: official X/Y, QI matrix and identity checked
+Lab1: official X/Y, QI matrix and identity checked
+Lab1 QR: official X/Y, QI matrix and identity checked
+Lab2: official X/Y, QI matrix and identity checked
+Lab2: Horner through included A/C+D; Lab2 -> Lab1 -> B lifetime checked
+Public client C: checks=559 failures=0
+Missing runtime: expected nonzero exit confirmed
+Runtime directory: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntime/Release/C
+Build and loader logs: /Users/danial2006/Documents/ChatGPT/Лабораторная работа №1/BuildFiles/DynamicRuntimeLogs/Release/C
