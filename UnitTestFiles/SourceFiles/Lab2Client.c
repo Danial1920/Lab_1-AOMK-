@@ -62,9 +62,22 @@ static void inspect(IEcoInterfaceBus1* bus, const UGUID* cid, const char* name,
         }
     }
     if (has_math) {
+        IEcoLab1* lab1 = 0;
         math = 0;
         status = root->pVTbl->QueryInterface(root, &IID_IEcoPolynomialMath, (voidptr_t*)&math);
         CHECK(status == 0 && math != 0, "polyfit exposed through aggregate");
+        status = root->pVTbl->QueryInterface(root, &IID_IEcoLab1, (voidptr_t*)&lab1);
+        CHECK(status == 0 && lab1 != 0, "typed IEcoLab1");
+        if (lab1) {
+            CHECK((void*)lab1 != (void*)math, "dedicated typed Lab1 view");
+            identity = 0;
+            CHECK(lab1->pVTbl->QueryInterface(lab1, &IID_IEcoUnknown, (voidptr_t*)&identity) == 0
+                && identity == root, "typed Lab1 controlling unknown");
+            if (identity) identity->pVTbl->Release(identity);
+            baseline = lab1->pVTbl->AddRef(lab1);
+            CHECK(lab1->pVTbl->Release(lab1) + 1 == baseline, "typed Lab1 reference balance");
+            lab1->pVTbl->Release(lab1);
+        }
         if (math != 0) {
             status = math->pVTbl->polyfit(math, points, values, 5u, 2u, coeffs);
             CHECK(status == 0 && near(coeffs[0], 2) && near(coeffs[1], 0) && near(coeffs[2], 3), "real polyfit result");

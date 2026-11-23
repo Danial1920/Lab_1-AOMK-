@@ -205,7 +205,11 @@ static int16_t ECOCALLMETHOD component_inner_qi(IEcoUnknown* me,
     if (guid_equal(riid, &IID_IEcoUnknown)) {
         component_inner_add_ref(me); *ppv = me; return ERR_ECO_SUCCESS;
     }
-    if (guid_equal(riid, &IID_IEcoPolynomialMath) || guid_equal(riid, &IID_IEcoLab1)) {
+    if (guid_equal(riid, &IID_IEcoLab1)) {
+        component_add_ref(&component->math); *ppv = &component->lab1.iface;
+        return ERR_ECO_SUCCESS;
+    }
+    if (guid_equal(riid, &IID_IEcoPolynomialMath)) {
         component_add_ref(&component->math); *ppv = &component->math;
         return ERR_ECO_SUCCESS;
     }
@@ -240,6 +244,20 @@ static int16_t ECOCALLMETHOD component_qi(IEcoPolynomialMathPtr me,
     controller = component_controller((CPolynomialMath*)me);
     return controller->pVTbl->QueryInterface(controller, riid, ppv);
 }
+static int16_t ECOCALLMETHOD lab1_root_qi(IEcoLab1* me, const UGUID* iid, voidptr_t* out) {
+    if (!out) return ERR_ECO_POINTER;
+    *out = 0;
+    if (!me) return ERR_ECO_POINTER;
+    return component_qi(&((CPolynomialLab1View*)me)->owner->math, iid, out);
+}
+static uint32_t ECOCALLMETHOD lab1_root_add(IEcoLab1* me) {
+    return me ? component_add_ref(&((CPolynomialLab1View*)me)->owner->math) : 0;
+}
+static uint32_t ECOCALLMETHOD lab1_root_release(IEcoLab1* me) {
+    return me ? component_release(&((CPolynomialLab1View*)me)->owner->math) : 0;
+}
+static IEcoLab1VTbl lab1_root_vtbl = {lab1_root_qi, lab1_root_add, lab1_root_release};
+
 static int16_t ECOCALLMETHOD lab1_calc_y_qi(IEcoCalculatorYPtr me,
     const UGUID* riid, voidptr_t* ppv) {
     if (ppv == 0) return ERR_ECO_POINTER;
@@ -434,6 +452,8 @@ int16_t PolyfitComponent_Create_00000045(
         (uint32_t)sizeof(CPolynomialMath));
     if (component == 0) return ERR_ECO_OUTOFMEMORY;
     component->math.pVTbl = &component_vtbl;
+    component->lab1.iface.pVTbl = &lab1_root_vtbl;
+    component->lab1.owner = component;
     lab1_connections_init(&component->connections, &component->math, memory);
     component->inner_unknown.iface.pVTbl = &component_inner_vtbl;
     component->inner_unknown.owner = component;

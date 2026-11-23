@@ -15,7 +15,7 @@ def verify_output(output):
     rounds = [(int(r), source, int(c), int(j)) for r, source, c, j in
               re.findall(r'^round=(\d+) source=(\w+) console=(\d+) journal=(\d+)$', output, re.M)]
     passed = re.search(r'^LAB3 PASS: (\d+) checks$', output, re.M)
-    if rounds != expected or not passed:
+    if rounds != expected or not passed or 'Horner x=5: partials=[7, 39], result=39' not in output.splitlines():
         raise SystemExit('Incomplete many-to-many demonstration:\n' + output)
     return passed.group(1)
 
@@ -35,7 +35,7 @@ with ZipFile(root/'EcoLab3_Report.docx') as doc:
     if not xml.findall('.//w:drawing',ns):
         raise SystemExit('Word report has no connection diagram')
 for path in ['SourceFiles/Lab1Connections.c','SourceFiles/CEcoLab1Generated.c',
-             'SharedFiles/IEcoLab1Events.h','UnitTestFiles/SourceFiles/Lab3Client.c']:
+             'SourceFiles/EcoLab2.c','SharedFiles/IEcoLab2Events.h','SharedFiles/IEcoLab1Events.h','UnitTestFiles/SourceFiles/Lab3Client.c']:
     if not (root/path).is_file():
         raise SystemExit('Missing source: '+path)
 

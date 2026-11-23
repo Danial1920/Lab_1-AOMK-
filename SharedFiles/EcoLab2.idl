@@ -50,3 +50,14 @@ interface IEcoCalculatorSafe : IEcoUnknown {
 
 /* A/C share the educational CID; select one implementation per process.
  * Lab2 uses a new IID for the added Horner contract; its CID is unchanged. */
+
+[
+    object,
+    uuid(AB50C6C5-F6F9-457C-A834-BB95C5D4F769),
+    pointer_default(unique)
+]
+interface IEcoLab2Events : IEcoUnknown {
+    int16_t OnHornerStarted([in, size_is(count)] const int16_t* coefficients, [in] uint32_t count, [in] int16_t x);
+    int16_t OnHornerStep([in] uint32_t index, [in] int32_t product, [in] int16_t coefficient, [in] int32_t accumulator);
+    int16_t OnHornerFinished([in] int32_t accumulator, [in] int16_t status);
+};

@@ -16,6 +16,8 @@ faults = [
      'sink->pVTbl->call;', 'if (node->cookie != 2u) sink->pVTbl->call;', 'sink->used =='),
     ('acknowledged but still connected', 'Lab1Connections.c',
      'sink = node->sink;\n        node->sink = 0;', 'sink = node->sink;\n        if (sink) return 0;\n        node->sink = 0;', 'Unadvise'),
+    ('wrong Horner product', 'EcoLab2.c',
+     'i, product, coefficients[i], value);', 'i, value, coefficients[i], value);', 'horner.product[0]'),
 ]
 evidence = []
 with tempfile.TemporaryDirectory(prefix='eco3-negative-') as temp:
@@ -42,7 +44,7 @@ with tempfile.TemporaryDirectory(prefix='eco3-negative-') as temp:
         evidence.append(name + ' -> ' + message)
         print(evidence[-1])
         source.write_bytes(baseline)
-evidence.append('LAB3 AUDIT PASS: 4/4 server defects detected in isolated copies')
+evidence.append(f'LAB3 AUDIT PASS: {len(evidence)}/{len(faults)} server defects detected in isolated copies')
 output = root/'BuildFiles/Lab3/audit.log'
 output.parent.mkdir(parents=True, exist_ok=True)
 output.write_text('\n'.join(evidence) + '\n')

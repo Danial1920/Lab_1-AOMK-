@@ -55,7 +55,7 @@ math_sources = ['SourceFiles/Lab1Connections.c', 'SourceFiles/CEcoLab1Generated.
 normal = archive('Eco.Lab1', 'D3B3E2F18D214A6B9A40440000000045', math_sources, ['-DPOLYFIT_SEPARATE_FACTORY'])
 qr = archive('Eco.Lab1QR', 'D3B3E2F18D214A6B9A40440000000046', math_sources,
              ['-DPOLYFIT_SEPARATE_FACTORY', '-DPOLYFIT_QR_ONLY'])
-lab2 = archive('Eco.Lab2', 'D3B3E2F18D214A6B9A40440000000065', ['SourceFiles/EcoLab2.c'])
+lab2 = archive('Eco.Lab2', 'D3B3E2F18D214A6B9A40440000000065', ['SourceFiles/EcoLab2.c', 'SourceFiles/Lab1Connections.c'])
 client = OUT / 'Lab2Client.o'
 # No HeaderFiles or server C sources in this compilation command.
 run(['clang'] + FLAGS + ['-I' + str(ROOT / 'UnitTestFiles/ExternalContracts'),

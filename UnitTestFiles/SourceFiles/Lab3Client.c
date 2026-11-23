@@ -6,6 +6,8 @@
 #include "IEcoInterfaceBus1.h"
 #include "EcoConnectionInterfaces.h"
 #include "IEcoLab1Events.h"
+#include "IEcoLab2Events.h"
+#include "IEcoCalculatorSafe.h"
 #include "IdEcoPolynomialMath.h"
 #include "IdEcoLab2.h"
 #include "IdEcoMemoryManager1.h"
@@ -26,6 +28,7 @@ typedef struct Event {
 } Event;
 typedef struct Sink {
     IEcoLab1Events iface;
+    IEcoLab2Events* horner;
     uint32_t refs, used;
     int verbose;
     IEcoConnectionPoint* disconnect;
@@ -49,6 +52,9 @@ static int16_t ECOCALLMETHOD sink_qi(IEcoLab1Events* me, const UGUID* iid, voidp
     if (!out) return ERR_ECO_POINTER;
     *out = 0;
     if (!me || !iid) return ERR_ECO_POINTER;
+    if (((Sink*)me)->horner && !memcmp(iid,&IID_IEcoLab2Events,sizeof(*iid))) {
+        sink_add(me); *out = ((Sink*)me)->horner; return 0;
+    }
     if (memcmp(iid, &IID_IEcoUnknown, sizeof(*iid)) && memcmp(iid, &IID_IEcoLab1Events, sizeof(*iid)))
         return ERR_ECO_NOINTERFACE;
     sink_add(me); *out = me; return 0;
@@ -290,27 +296,106 @@ static void many_to_many(IEcoInterfaceBus1* bus) {
     }
     CHECK(sink_release(&sinks[0].iface) == 0 && sink_release(&sinks[1].iface) == 0);
 }
+typedef struct HornerSink {
+    IEcoLab2Events iface;
+    Sink fit;
+    uint32_t steps, count;
+    int phase;
+    int16_t x, first, coefficient[2], status;
+    int32_t product[2], partial[2], final;
+} HornerSink;
+static uint32_t ECOCALLMETHOD horner_add(IEcoLab2Events* me) {
+    return me ? sink_add(&((HornerSink*)me)->fit.iface) : 0;
+}
+static uint32_t ECOCALLMETHOD horner_release(IEcoLab2Events* me) {
+    return me ? sink_release(&((HornerSink*)me)->fit.iface) : 0;
+}
+static int16_t ECOCALLMETHOD horner_qi(IEcoLab2Events* me, const UGUID* iid, voidptr_t* out) {
+    return sink_qi(me ? &((HornerSink*)me)->fit.iface : 0,iid,out);
+}
+static int16_t ECOCALLMETHOD horner_start(IEcoLab2Events* me, const int16_t* c, uint32_t n, int16_t x) {
+    HornerSink* sink = (HornerSink*)me;
+    CHECK(!sink->phase && n && c);
+    sink->phase = 1; sink->first = c[0]; sink->count = n; sink->x = x; sink->steps = 0;
+    return 0;
+}
+static int16_t ECOCALLMETHOD horner_step(IEcoLab2Events* me, uint32_t i, int32_t p, int16_t c, int32_t acc) {
+    HornerSink* sink = (HornerSink*)me;
+    CHECK(sink->phase == 1 && i == sink->steps + 1 && sink->steps < 2);
+    sink->product[sink->steps] = p; sink->coefficient[sink->steps] = c; sink->partial[sink->steps++] = acc;
+    return 0;
+}
+static int16_t ECOCALLMETHOD horner_finish(IEcoLab2Events* me, int32_t acc, int16_t status) {
+    HornerSink* sink = (HornerSink*)me;
+    CHECK(sink->phase == 1);
+    sink->phase = 2; sink->status = status; sink->final = acc;
+    return 0;
+}
+static IEcoLab2EventsVTbl horner_vtbl = {horner_qi,horner_add,horner_release,horner_start,horner_step,horner_finish};
+
 static void aggregate_identity(IEcoInterfaceBus1* bus) {
     IEcoUnknown *root, *identity;
+    IEcoLab2* lab2;
     IEcoPolynomialMath* math;
-    IEcoConnectionPoint* point;
-    IEcoConnectionPointContainer* container;
-    Sink sink;
-    uint32_t cookie;
-    init_sink(&sink,0);
+    IEcoConnectionPoint *points[2], *items[2];
+    IEcoConnectionPointContainer *container, *parent;
+    IEcoEnumConnectionPoints *en, *clone;
+    const UGUID* expected[2];
+    UGUID iid;
+    HornerSink horner;
+    IEcoEnumConnections* subscribers;
+    EcoConnectionData subscriber;
+    int16_t coefficients[] = {2,-3,4}, overflow[] = {200,1,1};
+    uint32_t cookies[2], fetched, i;
+    int32_t result;
+    expected[0] = &IID_IEcoLab2Events; expected[1] = &IID_IEcoLab1Events;
+    memset(&horner,0,sizeof(horner)); horner.iface.pVTbl = &horner_vtbl; init_sink(&horner.fit,0);
+    horner.fit.horner = &horner.iface;
     CHECK(bus->pVTbl->QueryComponent(bus,&CID_EcoLab2,0,&IID_IEcoUnknown,(voidptr_t*)&root) == 0 && root);
+    CHECK(root->pVTbl->QueryInterface(root,&IID_IEcoLab2,(voidptr_t*)&lab2) == 0 && lab2);
     CHECK(root->pVTbl->QueryInterface(root,&IID_IEcoPolynomialMath,(voidptr_t*)&math) == 0 && math);
-    point = get_point(math);
-    CHECK(point->pVTbl->GetConnectionPointContainer(point,&container) == 0 && container);
-    CHECK(container->pVTbl->QueryInterface(container,&IID_IEcoUnknown,(voidptr_t*)&identity) == 0 && identity == root);
-    identity->pVTbl->Release(identity); root->pVTbl->Release(root);
-    container->pVTbl->Release(container);
-    CHECK(point->pVTbl->Advise(point,(IEcoUnknown*)&sink.iface,&cookie) == 0 && cookie);
-    run_fit(math);
-    verify_trace(&sink,math,0);
-    math->pVTbl->Release(math);
-    CHECK(point->pVTbl->Release(point) == 0 && sink.refs == 1);
-    CHECK(sink_release(&sink.iface) == 0);
+    CHECK(math->pVTbl->QueryInterface(math,&IID_IEcoConnectionPointContainer,(voidptr_t*)&container) == 0 && container);
+    for (i = 0; i < 2; ++i) {
+        CHECK(container->pVTbl->FindConnectionPoint(container,expected[i],&points[i]) == 0 && points[i]);
+        CHECK(points[i]->pVTbl->GetConnectionInterface(points[i],&iid) == 0 && !memcmp(&iid,expected[i],sizeof(iid)));
+        CHECK(points[i]->pVTbl->GetConnectionPointContainer(points[i],&parent) == 0 && parent == container);
+        CHECK(parent->pVTbl->QueryInterface(parent,&IID_IEcoUnknown,(voidptr_t*)&identity) == 0 && identity == root);
+        identity->pVTbl->Release(identity); parent->pVTbl->Release(parent);
+    }
+    CHECK(container->pVTbl->EnumConnectionPoints(container,&en) == 0 && en);
+    CHECK(en->pVTbl->Next(en,2,items,&fetched) == 0 && fetched == 2 && items[0] == points[0] && items[1] == points[1]);
+    for (i = 0; i < 2; ++i) items[i]->pVTbl->Release(items[i]);
+    CHECK(en->pVTbl->Next(en,1,items,&fetched) == 1 && !fetched);
+    CHECK(en->pVTbl->Reset(en) == 0 && en->pVTbl->Skip(en,1) == 0 && en->pVTbl->Clone(en,&clone) == 0);
+    CHECK(clone->pVTbl->Next(clone,1,items,&fetched) == 0 && fetched == 1 && items[0] == points[1]);
+    items[0]->pVTbl->Release(items[0]); clone->pVTbl->Release(clone); en->pVTbl->Release(en);
+    CHECK(points[0]->pVTbl->Advise(points[0],(IEcoUnknown*)math,&cookies[0]) != 0 && !cookies[0]);
+    CHECK(points[0]->pVTbl->Advise(points[0],(IEcoUnknown*)&horner.fit.iface,&cookies[0]) == 0 && cookies[0]);
+    CHECK(points[1]->pVTbl->Advise(points[1],(IEcoUnknown*)&horner.fit.iface,&cookies[1]) == 0 && cookies[1]);
+    CHECK(points[0]->pVTbl->EnumConnections(points[0],&subscribers) == 0 && subscribers);
+    CHECK(subscribers->pVTbl->Next(subscribers,1,&subscriber,&fetched) == 0 && fetched == 1);
+    CHECK(subscriber.pUnk == (IEcoUnknown*)&horner.fit.iface && subscriber.cCookie == cookies[0]);
+    subscriber.pUnk->pVTbl->Release(subscriber.pUnk);
+    subscribers->pVTbl->Release(subscribers);
+    CHECK(lab2->pVTbl->Horner(lab2,coefficients,0,5,&result) != 0 && !horner.phase);
+    CHECK(lab2->pVTbl->Horner(lab2,coefficients,3,5,&result) == 0 && result == 39 && !horner.fit.used);
+    CHECK(horner.phase == 2 && horner.count == 3 && horner.x == 5 && horner.first == 2 && horner.steps == 2);
+    CHECK(horner.product[0] == 10 && horner.coefficient[0] == -3 && horner.partial[0] == 7);
+    CHECK(horner.product[1] == 35 && horner.coefficient[1] == 4 && horner.partial[1] == 39);
+    CHECK(horner.final == result && !horner.status);
+    printf("Horner x=%d: partials=[%d, %d], result=%d\n",horner.x,(int)horner.partial[0],(int)horner.partial[1],(int)result);
+    horner.phase = 0;
+    CHECK(lab2->pVTbl->Horner(lab2,overflow,3,100,&result) == ERR_ECO_CALCULATOR_OVERFLOW && !result);
+    CHECK(horner.phase == 2 && horner.steps == 1 && horner.final == 20001 && horner.status == ERR_ECO_CALCULATOR_OVERFLOW);
+    CHECK(points[0]->pVTbl->Unadvise(points[0],cookies[0]) == 0 && horner.fit.refs == 2);
+    horner.phase = 0;
+    CHECK(lab2->pVTbl->Horner(lab2,coefficients,3,5,&result) == 0 && result == 39 && !horner.phase);
+    run_fit(math); verify_trace(&horner.fit,math,0);
+    container->pVTbl->Release(container); lab2->pVTbl->Release(lab2);
+    math->pVTbl->Release(math); root->pVTbl->Release(root);
+    points[0]->pVTbl->Release(points[0]);
+    CHECK(points[1]->pVTbl->Release(points[1]) == 0 && horner.fit.refs == 1);
+    CHECK(horner_release(&horner.iface) == 0);
 }
 /* All seven failures below are injected into the real Eco allocator after
  * creating the source. Each return is checked while the object stays usable. */

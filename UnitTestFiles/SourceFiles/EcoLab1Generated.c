@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "IEcoSystem1.h"
 #include "IEcoInterfaceBus1.h"
 #include "polyfit_bus.h"
@@ -445,6 +446,27 @@ static void verify_component(IEcoPolynomialMathPtr component) {
     check(component->pVTbl->Release(component) > 0u);
 }
 
+static int16_t check_lab1_registration(IEcoInterfaceBus1* bus) {
+    IEcoPolynomialMath* math;
+    const double x[3] = {-1, 0, 1}, y[3] = {5, 3, 5};
+    double coeff[3];
+    unsigned i;
+    check(PolyfitComponent_RegisterOnBus(bus) == ERR_ECO_SUCCESS);
+    for (i = 0; i < 2; ++i) {
+        int16_t status;
+        math = 0;
+        if (i == 0) status = PolyfitComponent_QueryFromBus(bus, &math);
+        else status = bus->pVTbl->QueryComponent(bus, &CID_EcoPolynomialMathQR, 0,
+            &IID_IEcoPolynomialMath, (voidptr_t*)&math);
+        check(status == 0 && math != 0);
+        if (!math) continue;
+        check(math->pVTbl->polyfit(math, x, y, 3, 2, coeff) == 0);
+        check(close_to(coeff[0], 2, 1.e-10) && close_to(coeff[1], 0, 1.e-10) && close_to(coeff[2], 3, 1.e-10));
+        check(math->pVTbl->Release(math) == 0);
+    }
+    printf("Standalone Lab1 registration: %u checks, %u failures\n", checks, failures);
+    return failures ? ERR_ECO_FAIL : ERR_ECO_SUCCESS;
+}
 int16_t EcoMain(IEcoUnknown* unknown) {
     IEcoSystem1* system; IEcoInterfaceBus1* bus; IEcoPolynomialMathPtr component;
     IEcoMemoryAllocator1* memory; IEcoMemoryAllocator1* again; uint32_t base_refs;
@@ -459,6 +481,13 @@ int16_t EcoMain(IEcoUnknown* unknown) {
         (voidptr_t*)&bus);
     if (status != ERR_ECO_SUCCESS || bus == 0) {
         system->pVTbl->Release(system); return status;
+    }
+
+    if (getenv("ECO_TEST_LAB1_REGISTRATION")) {
+        status = check_lab1_registration(bus);
+        bus->pVTbl->Release(bus);
+        system->pVTbl->Release(system);
+        return status;
     }
 
     memory = 0; again = 0;

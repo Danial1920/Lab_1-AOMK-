@@ -20,6 +20,10 @@
 struct IEcoSystem1;
 #endif
 typedef struct CPolynomialMath CPolynomialMath;
+typedef struct CPolynomialLab1View {
+    IEcoLab1 iface;
+    CPolynomialMath* owner;
+} CPolynomialLab1View;
 typedef struct CPolynomialYView {
     IEcoCalculatorY iface;
     CPolynomialMath* owner;
@@ -34,6 +38,7 @@ typedef struct CPolynomialUnknownView {
 } CPolynomialUnknownView;
 struct CPolynomialMath {
     IEcoPolynomialMath math;
+    CPolynomialLab1View lab1;
     Lab1Connections connections;
     CPolynomialUnknownView inner_unknown;
     CPolynomialSafeView calculator_safe;

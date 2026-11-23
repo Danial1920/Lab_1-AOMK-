@@ -15,7 +15,7 @@ root = Path(__file__).resolve().parents[2]
 build = root/'BuildFiles/Lab3'
 logs = {(c,m):(build/c/(m+'.log')).read_text().splitlines() for c in ('Debug','Release') for m in ('Static','Dynamic')}
 audit = (build/'audit.log').read_text()
-if '4/4 server defects detected' not in audit:
+if '5/5 server defects detected' not in audit:
     raise SystemExit('Run make lab3-audit first')
 
 def diagram():
@@ -106,10 +106,13 @@ body('QR добавляет строки матрицы по мере чтени
 section('Отключение одной из четырёх связей')
 code([s for s in ref if s.startswith('round=')])
 body('Каждому приёмнику сначала пришло 5 событий от Гаусса и 14 от QR. В оба числа входят начало и конец. Перед вторым расчётом клиент вызвал Unadvise для связи QR с консолью. Все 14 событий QR снова дошли до журнала, а доставка событий Гаусса сохранилась у обоих приёмников.')
-section('Сравнение результатов')
+section('Коэффициенты polyfit')
 code([line.strip() for line in ref if 'finish status=' in line][:2])
 body('Вторая строка относится к QR. Коэффициент при x отличается от нуля примерно на 2,1·10⁻¹⁶ из-за округления. Оба результата укладываются в абсолютный допуск 10⁻¹⁰. Разное число уведомлений отражает разные вычислительные шаги.')
 
+section('Две точки подключения у Eco.Lab2')
+code([line for line in ref if line.startswith('Horner x=')])
+body('Клиент находит по IID точку Горнера и точку polyfit агрегированного Lab1. Для (2x − 3)x + 4 при x = 5 он получает начало, два шага и результат. Первый шаг передаёт произведение 10 и сумму 7, второй — 35 и 39. После отписки от событий Горнера уведомления polyfit продолжают приходить.')
 page(); title('Проверка и выводы')
 rows=[]
 for c in ('Debug','Release'):
@@ -122,7 +125,7 @@ body('Проверка перечислителей охватывает сни�
 code([s for s in ref if s.startswith('Allocation audit:')])
 body('При семи точечных отказах allocator проверены создание подписки, снимка и клона. После отказов объект снова выполнил polyfit. ASan/UBSan завершили прогон без диагностик.')
 section('Проверка самих тестов')
-body('В четырёх отдельных копиях проекта поочерёдно убрали событие Гаусса, изменили знак синуса, отключили доставку второму подписчику и оставили подписку активной после успешного Unadvise. На каждом дефекте UnitTest остановился с ненулевым кодом.')
+body('Поочерёдно внесли пять дефектов в копию исходников. Пропустили выбор строки Гаусса, изменили знак синуса, отключили второго подписчика, сохранили подписку после Unadvise и подменили произведение суммой в событии Горнера. На каждом дефекте UnitTest остановился с ненулевым кодом.')
 section('Повторение из корня проекта')
 code(['export ECO_FRAMEWORK="$HOME/Downloads/Eco.Framework"','make lab3-verify','make check eco-test-variants validation-build'])
 section('Вывод')

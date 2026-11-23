@@ -7,20 +7,6 @@
 
 #include "polyfit_bus.h"
 
-/* Register both task-44 implementations on the supplied interface bus. */
-int16_t PolyfitComponent_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus) {
-    int16_t status;
-    if (bus == 0 || bus->pVTbl == 0) return ERR_ECO_POINTER;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoPolynomialMath,
-        (IEcoUnknownPtr_t)GetPolynomialFactory_00000045());
-    if (status != ERR_ECO_SUCCESS) return status;
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoPolynomialMathQR,
-        (IEcoUnknownPtr_t)GetPolynomialQRFactory_00000046());
-    if (status != ERR_ECO_SUCCESS)
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
-    return status;
-}
-
 /* Resolve the normal-equations implementation from the interface bus. */
 int16_t PolyfitComponent_QueryFromBus(IEcoInterfaceBus1Ptr_t bus,
     IEcoPolynomialMathPtr* component) {
@@ -31,58 +17,52 @@ int16_t PolyfitComponent_QueryFromBus(IEcoInterfaceBus1Ptr_t bus,
         &IID_IEcoPolynomialMath, (voidptr_t*)component);
 }
 
+/* In the static configuration, register a complete graph in one transaction.
+ * No component is constructed until QueryComponent is called. */
 #if !defined(ECO_CALCULATOR_KIND) && !defined(ECO_LAB2_ONLY)
-#include "IdEcoLab2.h"
-int16_t CalculatorComponents_RegisterOnBus(IEcoInterfaceBus1* bus) {
-    const UGUID* cids[4]; IEcoComponentFactory* factories[4];
-    uint32_t i; int16_t status;
-    if (bus == 0) return ERR_ECO_POINTER;
-    cids[0] = &CID_EcoCalculatorA; cids[1] = &CID_EcoCalculatorB;
-    cids[2] = &CID_EcoCalculatorD; cids[3] = &CID_EcoCalculatorE;
+typedef struct FactoryEntry {
+    const UGUID* cid;
+    IEcoComponentFactory* (*factory)(void);
+} FactoryEntry;
+
+static const FactoryEntry entries[] = {
+    {&CID_EcoPolynomialMath, GetPolynomialFactory_00000045},
+    {&CID_EcoPolynomialMathQR, GetPolynomialQRFactory_00000046},
+    {&CID_EcoCalculatorB, GetCalculatorBFactory},
+    {&CID_EcoCalculatorE, GetCalculatorEFactory},
 #ifdef ECO_REPLACE_A_WITH_C
-    factories[0] = GetCalculatorCFactory();
+    {&CID_EcoCalculatorA, GetCalculatorCFactory},
 #else
-    factories[0] = GetCalculatorAFactory();
+    {&CID_EcoCalculatorA, GetCalculatorAFactory},
 #endif
-    factories[1] = GetCalculatorBFactory(); factories[2] = GetCalculatorDFactory();
-    factories[3] = GetCalculatorEFactory();
-    for (i = 0u; i < 4u; ++i) {
-        status = bus->pVTbl->RegisterComponent(bus, cids[i], (IEcoUnknown*)factories[i]);
+    {&CID_EcoCalculatorD, GetCalculatorDFactory}
+#if defined(ECO_LIB) || defined(ECO_DLL)
+    ,{&CID_EcoLab2, GetEcoLab2Factory}
+#endif
+};
+
+static int16_t register_entries(IEcoInterfaceBus1* bus, const FactoryEntry* list, uint32_t count) {
+    uint32_t i;
+    int16_t status;
+    if (!bus || !bus->pVTbl) return ERR_ECO_POINTER;
+    for (i = 0; i < count; ++i) {
+        status = bus->pVTbl->RegisterComponent(bus, list[i].cid, (IEcoUnknown*)list[i].factory());
         if (status != ERR_ECO_SUCCESS) {
-            while (i > 0u) { --i; bus->pVTbl->UnRegisterComponent(bus, cids[i]); }
+            while (i) bus->pVTbl->UnRegisterComponent(bus, list[--i].cid);
             return status;
         }
     }
     return ERR_ECO_SUCCESS;
 }
-
-#endif
-
-#if !defined(ECO_CALCULATOR_KIND) && !defined(ECO_LAB2_ONLY)
+int16_t PolyfitComponent_RegisterOnBus(IEcoInterfaceBus1* bus) {
+    return register_entries(bus, entries, 4); /* normal, QR, B and E */
+}
+int16_t CalculatorComponents_RegisterOnBus(IEcoInterfaceBus1* bus) {
+    return register_entries(bus, entries + 2, 4); /* B, E, A/C and D */
+}
 #if defined(ECO_LIB) || defined(ECO_DLL)
-int16_t EcoLab2_RegisterOnBus(IEcoInterfaceBus1Ptr_t bus) {
-    int16_t status;
-    if (bus == 0) return ERR_ECO_POINTER;
-    status = PolyfitComponent_RegisterOnBus(bus);
-    if (status != ERR_ECO_SUCCESS) return status;
-    status = CalculatorComponents_RegisterOnBus(bus);
-    if (status != ERR_ECO_SUCCESS) {
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
-        return status;
-    }
-    status = bus->pVTbl->RegisterComponent(bus, &CID_EcoLab2,
-        (IEcoUnknownPtr_t)GetEcoLab2Factory());
-    if (status != ERR_ECO_SUCCESS) {
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorE);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorD);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorB);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoCalculatorA);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMathQR);
-        bus->pVTbl->UnRegisterComponent(bus, &CID_EcoPolynomialMath);
-    }
-    return status;
+int16_t EcoLab2_RegisterOnBus(IEcoInterfaceBus1* bus) {
+    return register_entries(bus, entries, sizeof(entries)/sizeof(entries[0]));
 }
 #endif
-
 #endif

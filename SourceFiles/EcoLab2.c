@@ -24,6 +24,7 @@ static void lab2_destroy(CEcoLab2Component* component) {
     IEcoMemoryAllocator1* memory;
     memory = component->memory;
     /* Private Release does not re-enter the dying controlling unknown. */
+    lab1_connections_clear(&component->connections);
     if (component->lab1_inner != 0)
         component->lab1_inner->pVTbl->Release(component->lab1_inner);
     if (component->included_a != 0)
@@ -44,8 +45,13 @@ static int16_t ECOCALLMETHOD lab2_qi(IEcoLab2Ptr me, const UGUID* riid,
     if (guid_equal(riid, &IID_IEcoLab2) || guid_equal(riid, &IID_IEcoUnknown)) {
         ++component->references; *ppv = me; return ERR_ECO_SUCCESS;
     }
+    if (guid_equal(riid, &IID_IEcoConnectionPointContainer)) {
+        ++component->references;
+        *ppv = &component->connections.container;
+        return ERR_ECO_SUCCESS;
+    }
     if (component->lab1_inner != 0 &&
-        (guid_equal(riid, &IID_IEcoConnectionPointContainer) || guid_equal(riid, &IID_IEcoLab1) || guid_equal(riid, &IID_IEcoPolynomialMath) ||
+        (guid_equal(riid, &IID_IEcoLab1) || guid_equal(riid, &IID_IEcoPolynomialMath) ||
          guid_equal(riid, &IID_IEcoCalculatorX) || guid_equal(riid, &IID_IEcoCalculatorY) ||
          guid_equal(riid, &IID_IEcoCalculatorSafe)))
         return component->lab1_inner->pVTbl->QueryInterface(component->lab1_inner, riid, ppv);
@@ -69,20 +75,30 @@ static uint32_t ECOCALLMETHOD lab2_release(IEcoLab2Ptr me) {
 static int16_t ECOCALLMETHOD lab2_horner(IEcoLab2Ptr me, const int16_t* coefficients,
     uint32_t count, int16_t x, int32_t* result) {
     CEcoLab2Component* component; uint32_t i; int32_t value, product;
+    int16_t status = ERR_ECO_SUCCESS;
     if (result == 0) return ERR_ECO_POINTER;
     *result = 0;
     if (me == 0 || coefficients == 0) return ERR_ECO_POINTER;
     if (count == 0u || count > 0xFFFFFFFFu / sizeof(int16_t)) return ERR_ECO_INVALIDARG;
     component = (CEcoLab2Component*)me;
+    lab2_add_ref(me);
+    lab2_horner_started(&component->connections, coefficients, count, x);
     value = coefficients[0];
     for (i = 1u; i < count; ++i) {
-        if (value < -32768L || value > 32767L) return ERR_ECO_CALCULATOR_OVERFLOW;
+        if (value < -32768L || value > 32767L) {
+            status = ERR_ECO_CALCULATOR_OVERFLOW; break;
+        }
         product = component->included_d->pVTbl->Multiplication(component->included_d, (int16_t)value, x);
-        if (product < -32768L || product > 32767L) return ERR_ECO_CALCULATOR_OVERFLOW;
+        if (product < -32768L || product > 32767L) {
+            status = ERR_ECO_CALCULATOR_OVERFLOW; break;
+        }
         value = component->included_a->pVTbl->Addition(component->included_a, (int16_t)product, coefficients[i]);
+        lab2_horner_step(&component->connections, i, product, coefficients[i], value);
     }
-    *result = value;
-    return ERR_ECO_SUCCESS;
+    if (status == ERR_ECO_SUCCESS) *result = value;
+    lab2_horner_finished(&component->connections, value, status);
+    lab2_release(me);
+    return status;
 }
 static IEcoLab2VTbl lab2_vtbl = {lab2_qi, lab2_add_ref, lab2_release, lab2_horner};
 static int16_t EcoLab2_Create(IEcoUnknown* system, IEcoMemoryAllocator1* memory,
@@ -95,6 +111,7 @@ static int16_t EcoLab2_Create(IEcoUnknown* system, IEcoMemoryAllocator1* memory,
         (uint32_t)sizeof(CEcoLab2Component));
     if (component == 0) return ERR_ECO_OUTOFMEMORY;
     component->lab2.pVTbl = &lab2_vtbl;
+    lab2_connections_init(&component->connections, &component->lab2, memory);
     component->references = 1u;
     component->memory = memory; memory->pVTbl->AddRef(memory);
     component->system = 0; component->lab1_inner = 0; component->included_a = 0; component->included_d = 0;
@@ -120,6 +137,7 @@ static int16_t EcoLab2_Create(IEcoUnknown* system, IEcoMemoryAllocator1* memory,
             &IID_IEcoCalculatorY, (voidptr_t*)&component->included_d);
     bus->pVTbl->Release(bus);
     if (status != ERR_ECO_SUCCESS) { lab2_destroy(component); return status; }
+    component->connections.inner = component->lab1_inner;
     *result = component;
     return ERR_ECO_SUCCESS;
 }

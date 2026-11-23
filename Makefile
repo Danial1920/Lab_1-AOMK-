@@ -54,6 +54,8 @@ ECO_HEADERS = $(wildcard $(ECO_FRAMEWORK)/*/SharedFiles/*.h)
 .PHONY: eco-build eco-test
 eco-build: $(BUILD)/EcoLab1EcoTest
 eco-test: eco-build
+	@mkdir -p "$(BUILD)/EmptyRuntime"
+	ECO_FRAMEWORK_RT="$(abspath $(BUILD))/EmptyRuntime" ECO_TEST_LAB1_REGISTRATION=1 "$(BUILD)/EcoLab1EcoTest"
 	"$(BUILD)/EcoLab1EcoTest"
 	@echo "ECO TESTS PASSED: real Interface Bus, Lab1/Lab2/A-E and failure paths"
 $(BUILD)/EcoLab1EcoTest: $(ECO_SOURCES) $(HEADERS) $(ECO_HEADERS) $(ECO_LIBRARIES) Makefile FORCE

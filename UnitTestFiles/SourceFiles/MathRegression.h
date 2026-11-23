@@ -32,6 +32,25 @@ static void check_integer_precision(IEcoPolynomialMath* component) {
     check(status == ERR_ECO_SUCCESS);
     check(result[0] == 7.0L);
 }
+/* Exactly d distinct abscissas cannot determine d+1 coefficients.
+ * Repeating valid samples is allowed once the rank condition holds. */
+static void check_repeated_abscissas(IEcoPolynomialMath* component) {
+    double x[16], y[16], out[5];
+    uint32_t i;
+    int16_t status;
+    for (i = 0; i < 16; ++i) {
+        x[i] = (double)(i % 4);
+        y[i] = x[i] + 3.0;
+    }
+    status = component->pVTbl->polyfit(component, x, y, 16, 4, out);
+    check(status == ERR__POLYFIT_SINGULAR);
+    for (i = 0; i < 5; ++i) check(out[i] == 0.0);
+    x[15] = 4.0; y[15] = 7.0;
+    status = component->pVTbl->polyfit(component, x, y, 16, 4, out);
+    check(status == ERR_ECO_SUCCESS);
+    for (i = 0; i < 3; ++i) check(close_to(out[i], 0.0, 1.e-10));
+    check(close_to(out[3], 1.0, 1.e-10) && close_to(out[4], 3.0, 1.e-10));
+}
 static void check_extended_math(IEcoPolynomialMath* component) {
     const double tiny[3] = {-1.0e-310, 0.0, 1.0e-310};
     const double huge_x[3] = {1.0e308, 1.0e308, 1.0e308};
@@ -45,6 +64,7 @@ static void check_extended_math(IEcoPolynomialMath* component) {
     EcoVectorView vx; EcoVectorView vy; IEcoPolynomial* polynomial;
     IEcoUnknown* unknown; int16_t status; uint32_t i;
     check_integer_precision(component);
+    check_repeated_abscissas(component);
     status = component->pVTbl->polyfit(component, tiny, tiny, 3u, 1u, out);
     check(status == ERR_ECO_SUCCESS);
     check(close_to(out[0], 1.0, 1.0e-12) && close_to(out[1], 0.0, 1.0e-320));

@@ -89,7 +89,7 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
     long double a_scale;
     long double b_shift;
     long double xv, yv, z, m, av, bv, c, s, h, old, t, f, v;
-    uint32_t n, i, j, k, p, order, bytes;
+    uint32_t n, i, j, k, p, order, bytes, distinct = 0;
     int16_t status;
     if (memory == 0 || read == 0 || context == 0 || out == 0)
         return ERR_ECO_POINTER;
@@ -120,12 +120,21 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
         if (xv - xv != 0 || yv - yv != 0) {
             status = ERR__POLYFIT_NONFINITE; goto cleanup;
         }
+        /* Before constructing the Vandermonde matrix, use its scratch row
+         * to count up to degree+1 distinct finite abscissas. */
+        if (distinct < order) {
+            for (i = 0; i < distinct && row[i] != xv; ++i) { }
+            if (i == distinct) row[distinct++] = xv;
+        }
         if (n == 0u || xv < x_min) x_min = xv;
         if (n == 0u || xv > x_max) x_max = xv;
         if (n == 0u || yv < y_min) y_min = yv;
         if (n == 0u || yv > y_max) y_max = yv;
         if (magnitude(xv) > x_scale) x_scale = magnitude(xv);
         if (magnitude(yv) > y_scale) y_scale = magnitude(yv);
+    }
+    if (distinct < order) {
+        status = ERR__POLYFIT_SINGULAR; goto cleanup;
     }
     if (x_scale == 0.0L) x_scale = 1.0L;
     if (y_scale == 0.0L) y_scale = 1.0L;

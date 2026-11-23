@@ -6,6 +6,7 @@
 #include "IEcoLab1.h"
 #include "IEcoCalculatorSafe.h"
 #include "IEcoLab2.h"
+#include "Lab1Connections.h"
 #include "IEcoMemoryAllocator1.h"
 #include "IEcoInterfaceBus1.h"
 #if defined(ECO_LIB) || defined(ECO_DLL)
@@ -50,6 +51,7 @@ struct CCalculatorComponent {
 typedef struct CEcoLab2Component CEcoLab2Component;
 struct CEcoLab2Component {
     IEcoLab2 lab2;
+    Lab1Connections connections;
     uint32_t references;
     IEcoMemoryAllocator1* memory;
     struct IEcoSystem1* system;
