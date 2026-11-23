@@ -10,7 +10,7 @@ $(error CALCULATOR_VARIANT must be A or C)
 endif
 BUILD ?= BuildFiles/Host
 TARGET = $(BUILD)/EcoLab1GeneratedUnitTest
-SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c
+SOURCES = SourceFiles/Lab1Connections.c SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/HostTests.c
 HEADERS = $(wildcard HeaderFiles/*.h SharedFiles/*.h UnitTestFiles/SourceFiles/*.h DependenciesFiles/*/SharedFiles/*.h)
 
 .PHONY: all test strict check-no-libc sanitize check reference matlab-reference matrix verify FORCE
@@ -35,7 +35,7 @@ sanitize:
 	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" DesignFiles/Report/check_sanitizers.sh
 
 # Host and compile checks; real Eco integration is also run by sanitize.
-check: test strict check-no-libc sanitize validation-tools component-clients
+check: test strict check-no-libc sanitize validation-tools component-clients lab3-unit
 
 reference: validation-tools
 	$(PYTHON) DesignFiles/Reference/compare_scipy.py
@@ -49,7 +49,7 @@ matrix:
 ECO_FRAMEWORK ?= $(HOME)/Downloads/Eco.Framework
 ECO_INC = $(INC) -I$(ECO_FRAMEWORK)/Eco.FileSystemManagement1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.MemoryManager1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.InterfaceBus1/SharedFiles -I$(ECO_FRAMEWORK)/Eco.System1/SharedFiles
 ECO_LIBRARIES = $(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000053595333.a $(ECO_FRAMEWORK)/Eco.InterfaceBus1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000042757331.a $(ECO_FRAMEWORK)/Eco.MemoryManager1/BuildFiles/Mac/arm64/StaticRelease/lib0000000000000000000000004D656D31.a $(ECO_FRAMEWORK)/Eco.FileSystemManagement1/BuildFiles/Mac/arm64/StaticRelease/lib00000000000000000000000046534D31.a
-ECO_SOURCES = SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c
+ECO_SOURCES = SourceFiles/Lab1Connections.c SourceFiles/CEcoLab1Generated.c SourceFiles/CEcoLab1GeneratedFactory.c SourceFiles/CalculatorComponents.c SourceFiles/EcoLab2.c SourceFiles/polyfit_bus.c UnitTestFiles/SourceFiles/EcoLab1Generated.c
 ECO_HEADERS = $(wildcard $(ECO_FRAMEWORK)/*/SharedFiles/*.h)
 .PHONY: eco-build eco-test
 eco-build: $(BUILD)/EcoLab1EcoTest
@@ -78,3 +78,21 @@ eco-test-variants:
 .PHONY: component-clients
 component-clients:
 	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" $(PYTHON) DesignFiles/Report/build_component_clients.py
+
+# Fast integrated run for sanitizers and negative controls.
+.PHONY: lab3-unit lab3-test lab3-audit
+lab3-unit:
+	@mkdir -p "$(BUILD)"
+	$(CC) $(CFLAGS) -DECO_AARCH64 -DECO_LIB $(ECO_INC) $(filter-out UnitTestFiles/%,$(ECO_SOURCES)) UnitTestFiles/SourceFiles/Lab3Client.c $(ECO_LIBRARIES) -o "$(BUILD)/EcoLab3UnitTest"
+	"$(BUILD)/EcoLab3UnitTest"
+
+lab3-test:
+	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" $(PYTHON) DesignFiles/Report/build_lab3.py
+
+lab3-audit:
+	ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 $(MAKE) BUILD=BuildFiles/Lab3/Sanitized CFLAGS="$(CFLAGS) -fsanitize=address,undefined -fno-omit-frame-pointer -g" lab3-unit
+	ECO_FRAMEWORK="$(ECO_FRAMEWORK)" $(PYTHON) DesignFiles/Reference/test_lab3_validation.py
+
+.PHONY: lab3-verify
+lab3-verify: lab3-test lab3-audit
+	$(PYTHON) DesignFiles/Report/check_lab3_submission.py

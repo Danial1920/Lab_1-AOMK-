@@ -11,6 +11,7 @@
 #include "IEcoCalculatorX.h"
 #include "IEcoCalculatorY.h"
 #include "IEcoLab1.h"
+#include "Lab1Connections.h"
 #include "IEcoCalculatorSafe.h"
 #include "IEcoMemoryAllocator1.h"
 #if defined(ECO_LIB) || defined(ECO_DLL)
@@ -33,6 +34,7 @@ typedef struct CPolynomialUnknownView {
 } CPolynomialUnknownView;
 struct CPolynomialMath {
     IEcoPolynomialMath math;
+    Lab1Connections connections;
     CPolynomialUnknownView inner_unknown;
     CPolynomialSafeView calculator_safe;
     CPolynomialYView calculator_y;

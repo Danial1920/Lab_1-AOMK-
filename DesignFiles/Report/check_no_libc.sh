@@ -9,7 +9,7 @@ command -v python3 >/dev/null 2>&1 || { echo "NO LIBC CHECK FAILED: python3 unav
 # direct source calls. Link the component objects together before checking
 # undefined symbols, so only genuine external dependencies remain.
 for level in 0 2; do
-  for source in CEcoLab1Generated.c CEcoLab1GeneratedFactory.c CalculatorComponents.c EcoLab2.c polyfit_bus.c; do
+  for source in Lab1Connections.c CEcoLab1Generated.c CEcoLab1GeneratedFactory.c CalculatorComponents.c EcoLab2.c polyfit_bus.c; do
     clang -std=c89 -Wall -Wextra -Werror -fno-stack-protector -fno-builtin -O"$level" -DECO_APPLE -DECO_AARCH64 -DECO_LIB \
       -I"$ROOT/DependenciesFiles/Eco.Core1/SharedFiles" \
       -I"$ROOT/DependenciesFiles/Eco.InterfaceBus1/SharedFiles" \
@@ -18,7 +18,7 @@ for level in 0 2; do
   done
   # Directory paths can contain spaces; use positional arguments instead of
   # splitting paths containing whitespace.
-  set -- "$OUT/CEcoLab1Generated_O$level.o" "$OUT/CEcoLab1GeneratedFactory_O$level.o" "$OUT/CalculatorComponents_O$level.o" "$OUT/EcoLab2_O$level.o" "$OUT/polyfit_bus_O$level.o"
+  set -- "$OUT/Lab1Connections_O$level.o" "$OUT/CEcoLab1Generated_O$level.o" "$OUT/CEcoLab1GeneratedFactory_O$level.o" "$OUT/CalculatorComponents_O$level.o" "$OUT/EcoLab2_O$level.o" "$OUT/polyfit_bus_O$level.o"
   nm -g "$@" > "$OUT/symbols_O$level.txt"
   python3 - "$OUT/symbols_O$level.txt" <<'PY'
 import sys

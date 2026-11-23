@@ -128,6 +128,7 @@ endif
 
 # --- Source and Object Files ---
 SRC = ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CEcoLab1Generated.c \
+      ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)Lab1Connections.c \
       ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CEcoLab1GeneratedFactory.c \
       ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)CalculatorComponents.c \
       ..$(SLASH)..$(SLASH)..$(SLASH)SourceFiles$(SLASH)EcoLab2.c \

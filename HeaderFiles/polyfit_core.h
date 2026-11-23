@@ -7,6 +7,7 @@
 
 #include "IEcoMemoryAllocator1.h"
 #include "Err.h"
+#include "Lab1Connections.h"
 
 #define _REAL double
 #define _OUT double

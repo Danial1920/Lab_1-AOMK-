@@ -165,6 +165,7 @@ static uint32_t ECOCALLMETHOD component_inner_release(IEcoUnknown* me) {
     references = --component->references;
     if (references == 0u) {
         memory = component->m_pIMem;
+        lab1_connections_clear(&component->connections);
         if (component->aggregated_b != 0)
             component->aggregated_b->pVTbl->Release(component->aggregated_b);
         if (component->included_y != 0)
@@ -206,6 +207,11 @@ static int16_t ECOCALLMETHOD component_inner_qi(IEcoUnknown* me,
     }
     if (guid_equal(riid, &IID_IEcoPolynomialMath) || guid_equal(riid, &IID_IEcoLab1)) {
         component_add_ref(&component->math); *ppv = &component->math;
+        return ERR_ECO_SUCCESS;
+    }
+    if (guid_equal(riid, &IID_IEcoConnectionPointContainer)) {
+        component_add_ref(&component->math);
+        *ppv = &component->connections.container;
         return ERR_ECO_SUCCESS;
     }
     if (guid_equal(riid, &IID_IEcoCalculatorX)) {
@@ -302,18 +308,22 @@ static int16_t ECOCALLMETHOD NAME(IEcoPolynomialMathPtr me, \
     const TYPE* x, const TYPE* y, uint32_t count, uint32_t degree, \
     OUT* coefficients) { \
     CPolynomialMath* component; \
-    uint32_t bytes; \
+    long double values[POLYFIT_MAX_ORDER]; \
+    uint32_t i; \
+    int16_t status; \
     if (me == 0) return ERR_ECO_POINTER; \
     component = (CPolynomialMath*)me; \
-    if (coefficients == 0) return ERR_ECO_POINTER; \
-    if (degree >= POLYFIT_MAX_ORDER) return ERR__POLYFIT_ARGUMENT; \
-    if (sizeof(OUT) > 0xFFFFFFFFu / (degree + 1u)) \
-        return ERR_ECO_OUTOFMEMORY; \
-    bytes = (uint32_t)(sizeof(OUT) * (degree + 1u)); \
-    component->m_pIMem->pVTbl->Fill(component->m_pIMem, coefficients, 0, bytes); \
-    if (x == 0 || y == 0) return ERR_ECO_POINTER; \
-    return SOLVER(component->m_pIMem, x, y, count, degree, coefficients, \
-        component->method); \
+    component_add_ref(me); \
+    lab1_started(&component->connections, component->method, count, degree); \
+    status = SOLVER(component->m_pIMem, x, y, count, degree, coefficients, \
+        component->method, &component->connections); \
+    if (status == ERR_ECO_SUCCESS && component->connections.head != 0) { \
+        for (i = 0u; i <= degree; ++i) values[i] = coefficients[i]; \
+    } \
+    lab1_finished(&component->connections, status, status == 0 ? degree + 1u : 0u, \
+        status == 0 ? values : 0); \
+    component_release(me); \
+    return status; \
 }
 
 COMPONENT_POLYFIT(component_polyfit, double, double, polyfit_solve_00000045)
@@ -424,6 +434,7 @@ int16_t PolyfitComponent_Create_00000045(
         (uint32_t)sizeof(CPolynomialMath));
     if (component == 0) return ERR_ECO_OUTOFMEMORY;
     component->math.pVTbl = &component_vtbl;
+    lab1_connections_init(&component->connections, &component->math, memory);
     component->inner_unknown.iface.pVTbl = &component_inner_vtbl;
     component->inner_unknown.owner = component;
     component->calculator_safe.iface.pVTbl = &lab1_safe_vtbl;

@@ -7,6 +7,7 @@
 #include "IEcoSystem1.h"
 #include "IdEcoMemoryManager1.h"
 #include "Err.h"
+#include "EcoConnectionInterfaces.h"
 
 typedef struct CEcoLab2Factory {
     IEcoComponentFactory factory;
@@ -44,7 +45,7 @@ static int16_t ECOCALLMETHOD lab2_qi(IEcoLab2Ptr me, const UGUID* riid,
         ++component->references; *ppv = me; return ERR_ECO_SUCCESS;
     }
     if (component->lab1_inner != 0 &&
-        (guid_equal(riid, &IID_IEcoLab1) || guid_equal(riid, &IID_IEcoPolynomialMath) ||
+        (guid_equal(riid, &IID_IEcoConnectionPointContainer) || guid_equal(riid, &IID_IEcoLab1) || guid_equal(riid, &IID_IEcoPolynomialMath) ||
          guid_equal(riid, &IID_IEcoCalculatorX) || guid_equal(riid, &IID_IEcoCalculatorY) ||
          guid_equal(riid, &IID_IEcoCalculatorSafe)))
         return component->lab1_inner->pVTbl->QueryInterface(component->lab1_inner, riid, ppv);

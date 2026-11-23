@@ -13,4 +13,4 @@
 int16_t _FN(/* in */ IEcoMemoryAllocator1* memory,
     /* in */ const _REAL* x, /* in */ const _REAL* y,
     /* in */ uint32_t count, /* in */ uint32_t degree,
-    /* out */ _OUT* out, /* in */ uint32_t method);
+    /* out */ _OUT* out, /* in */ uint32_t method, Lab1Connections* connections);

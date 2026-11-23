@@ -73,7 +73,7 @@ static int16_t restore_coefficient(long double coefficient,
 /* Solve one fit in O(n * d^2 + d^3) time and O(d^2) allocator memory. */
 static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
     void* context, uint32_t count, uint32_t degree, long double* out,
-    uint32_t method) {
+    uint32_t method, Lab1Connections* connections) {
     long double* block;
     long double (*a)[MAX_ORDER + 1u];
     long double* row;
@@ -182,6 +182,7 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
                     a[i][j] = c * old + s * row[j];
                     row[j] = -s * old + c * row[j];
                 }
+                if (connections->head != 0) lab1_rotation(connections, n, i, c, s);
             }
         }
     }
@@ -190,6 +191,7 @@ static int16_t solve(IEcoMemoryAllocator1* memory, ReadValue read,
             p = i;
             for (j = i + 1u; j < order; ++j)
                 if (magnitude(a[j][i]) > magnitude(a[p][i])) p = j;
+            if (connections->head != 0) lab1_pivot(connections, i, p, a[p][i]);
             if (p != i) {
                 for (k = i; k <= order; ++k) {
                     t = a[i][k]; a[i][k] = a[p][k]; a[p][k] = t;
@@ -274,7 +276,7 @@ static int floating_input_exact(long double value) {
 #define API(S,T,O,N,LIMIT,VALIDATE) \
 int16_t S##_00000045(/* in */ IEcoMemoryAllocator1* memory, \
     /* in */ const T* x, /* in */ const T* y, /* in */ uint32_t count, \
-    /* in */ uint32_t degree, /* out */ O* out, /* in */ uint32_t method) { \
+    /* in */ uint32_t degree, /* out */ O* out, /* in */ uint32_t method, Lab1Connections* connections) { \
     N pair; long double* result; O* converted; \
     uint32_t i, bytes; int16_t status; \
     if (memory == 0 || out == 0) return ERR_ECO_POINTER; \
@@ -290,7 +292,7 @@ int16_t S##_00000045(/* in */ IEcoMemoryAllocator1* memory, \
     result = (long double*)memory->pVTbl->Alloc(memory, (uint32_t)(sizeof(long double) * 2u * MAX_ORDER)); \
     if (result == 0) return ERR_ECO_OUTOFMEMORY; \
     converted = (O*)(result + MAX_ORDER); pair.x = x; pair.y = y; \
-    status = solve(memory, N##_read, &pair, count, degree, result, method); \
+    status = solve(memory, N##_read, &pair, count, degree, result, method, connections); \
     if (status == ERR_ECO_SUCCESS) { \
         for (i = 0; i <= degree; ++i) { \
             if ((LIMIT) > 0 && magnitude(result[i]) > (LIMIT)) { status = ERR__POLYFIT_NONFINITE; break; } \

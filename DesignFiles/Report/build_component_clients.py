@@ -51,7 +51,7 @@ calculator_ids = ['4828F6552E4540E78121EBD220DC360E', 'AE202E543CE54550899603BD7
 calculators = {name: archive('Eco.Calculator' + name, cid, ['SourceFiles/CalculatorComponents.c'],
                            ['-DECO_CALCULATOR_KIND=' + str(index)])
               for index, (name, cid) in enumerate(zip('ABCDE', calculator_ids))}
-math_sources = ['SourceFiles/CEcoLab1Generated.c', 'SourceFiles/CEcoLab1GeneratedFactory.c']
+math_sources = ['SourceFiles/Lab1Connections.c', 'SourceFiles/CEcoLab1Generated.c', 'SourceFiles/CEcoLab1GeneratedFactory.c']
 normal = archive('Eco.Lab1', 'D3B3E2F18D214A6B9A40440000000045', math_sources, ['-DPOLYFIT_SEPARATE_FACTORY'])
 qr = archive('Eco.Lab1QR', 'D3B3E2F18D214A6B9A40440000000046', math_sources,
              ['-DPOLYFIT_SEPARATE_FACTORY', '-DPOLYFIT_QR_ONLY'])
@@ -75,3 +75,15 @@ for variant in 'AC':
         raise SystemExit('Client object changed between A/C runs')
 print('Same client object SHA256: ' + digest)
 print('Independent archives and A/C substitution PASSED: ' + str(OUT))
+
+# Lab3 uses the same isolated per-CID archives. Its dynamic client links
+# only the official framework, so QueryComponent has to load the factories.
+if os.environ.get('BUILD_LAB3_CLIENTS') == '1':
+    clients = ROOT / 'BuildFiles/Lab3' / CONFIG
+    clients.mkdir(parents=True, exist_ok=True)
+    for mode in ('Static', 'Dynamic'):
+        defines = ['-DECO_DYNAMIC_CLIENT'] if mode == 'Dynamic' else []
+        archives = [] if defines else [lab2, normal, qr] + [calculators[k] for k in 'ABDE']
+        run(['clang'] + FLAGS + defines + ['-I' + str(ROOT / 'SharedFiles')] + SDK +
+            [str(ROOT / 'UnitTestFiles/SourceFiles/Lab3Client.c')] + archives + LIBS +
+            ['-o', str(clients / ('EcoLab3' + mode))])

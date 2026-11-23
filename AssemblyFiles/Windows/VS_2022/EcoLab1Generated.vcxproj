@@ -354,6 +354,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\SourceFiles\CEcoLab1Generated.c" />
     <ClCompile Include="..\..\..\SourceFiles\CEcoLab1GeneratedFactory.c" />
+    <ClCompile Include="..\..\..\SourceFiles\Lab1Connections.c" />
     <ClCompile Include="..\..\..\SourceFiles\CalculatorComponents.c" />
     <ClCompile Include="..\..\..\SourceFiles\EcoLab2.c" />
     <ClCompile Include="..\..\..\SourceFiles\polyfit_bus.c" />

@@ -46,6 +46,9 @@
     <ClCompile Include="..\..\..\SourceFiles\CEcoLab1GeneratedFactory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SourceFiles\Lab1Connections.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SourceFiles\CalculatorComponents.c">
       <Filter>Source Files</Filter>
     </ClCompile>
